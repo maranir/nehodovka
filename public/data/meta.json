@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-17T12:20:03.286Z",
+ "generatedAt": "2026-11-17T12:50:24.492Z",
  "years": [
   {
    "year": 2023,
@@ -9,8 +9,8 @@
    "lastDate": "2023-12-31",
    "source": {
     "file": "data2023.rar",
-    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2023",
-    "url": "https://policie.gov.cz/documents/data2023?disposition=attachment",
+    "page": null,
+    "url": null,
     "lastModified": "Wed, 20 May 2026 11:23:42 GMT"
    },
    "skipped": 0
@@ -23,8 +23,8 @@
    "lastDate": "2024-12-31",
    "source": {
     "file": "data2024.rar",
-    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2024",
-    "url": "https://policie.gov.cz/documents/data2024?disposition=attachment",
+    "page": null,
+    "url": null,
     "lastModified": "Wed, 20 May 2026 11:27:42 GMT"
    },
    "skipped": 0
@@ -37,8 +37,8 @@
    "lastDate": "2025-12-31",
    "source": {
     "file": "data2025.rar",
-    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2025",
-    "url": "https://policie.gov.cz/documents/data2025?disposition=attachment",
+    "page": null,
+    "url": null,
     "lastModified": "Wed, 20 May 2026 11:40:55 GMT"
    },
    "skipped": 0
@@ -51,8 +51,8 @@
    "lastDate": "2026-11-04",
    "source": {
     "file": "Data_web_10_2026.rar",
-    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2026",
-    "url": "https://policie.gov.cz/documents/dataweb102026?disposition=attachment",
+    "page": null,
+    "url": null,
     "lastModified": "Fri, 06 Nov 2026 13:25:18 GMT"
    },
    "skipped": 0

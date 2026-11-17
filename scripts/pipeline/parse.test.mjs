@@ -47,3 +47,18 @@ test('validate blocks shrinking data', () => {
   now.years[0].accidents = 85500;
   assert.deepEqual(validate(now, prev), []);
 });
+
+test('black spot helpers', async () => {
+  const { titleCase, roadLabel, blackSpots } = await import('./build.mjs');
+  assert.equal(titleCase('BYSTŘICE NAD PERNŠTEJNEM'), 'Bystřice nad Pernštejnem');
+  assert.equal(titleCase('FRÝDEK-MÍSTEK'), 'Frýdek-Místek');
+  assert.equal(roadLabel('0', '1'), 'D1');
+  assert.equal(roadLabel('2', '0118'), 'II/118');
+  assert.equal(roadLabel('6', ''), null);
+  const a = (lat, lon, killed) => ({ lat, lon, killed, serious: 0, light: 1, cause: '206', town: 'X', road: '1', roadNo: '3', region: '00', flags: 0 });
+  const cluster = Array.from({ length: 12 }, (_, i) => a(50 + i * 0.00001, 14, i === 0 ? 1 : 0));
+  const spots = blackSpots([...cluster, a(49, 16, 0)], 5);
+  assert.equal(spots.length, 1); // the lone crash is not a black spot
+  assert.equal(spots[0].n, 12);
+  assert.equal(spots[0].road, 'I/3');
+});

@@ -94,6 +94,8 @@ export function buildYear(files, year) {
       spot: r.p27,
       road: r.p36,
       flags,
+      roadNo: r.p37 ?? '',
+      town: g?.h?.trim() ?? '',
       lon: coord?.[0] ?? null,
       lat: coord?.[1] ?? null,
     });
@@ -329,4 +331,95 @@ export function pointsFor(accidents) {
     cols.flags.push(a.flags);
   }
   return { n: cols.lon.length, ...cols };
+}
+
+// ---------- black spots ----------
+const SMALL_WORDS = new Set(['nad', 'pod', 'u', 'v', 've', 'na', 'and', 'der', 'pri', 'při']);
+/** "BYSTŘICE NAD PERNŠTEJNEM" -> "Bystřice nad Pernštejnem" */
+export function titleCase(s) {
+  return s
+    .toLocaleLowerCase('cs')
+    .split(/(\s+|-)/)
+    .map((w, i) => (i > 0 && SMALL_WORDS.has(w) ? w : w.charAt(0).toLocaleUpperCase('cs') + w.slice(1)))
+    .join('');
+}
+
+export function roadLabel(roadType, roadNo) {
+  const n = String(roadNo ?? '').trim().replace(/^0+/, '');
+  if (!n) return null;
+  if (roadType === '0') return `D${n}`;
+  if (roadType === '1') return `I/${n}`;
+  if (roadType === '2') return `II/${n}`;
+  if (roadType === '3') return `III/${n}`;
+  return null;
+}
+
+const mode = (arr) => {
+  const m = new Map();
+  for (const x of arr) if (x) m.set(x, (m.get(x) ?? 0) + 1);
+  let best = null, bn = 0;
+  for (const [k, v] of m) if (v > bn) { best = k; bn = v; }
+  return best;
+};
+
+/**
+ * Find the worst places: score ~250 m grid cells by severity, then pick the best cells
+ * greedily, at least 1.5 km apart. Stats are computed for a 300 m radius around each spot.
+ */
+export function blackSpots(accidents, top = 100) {
+  const inj = accidents.filter((a) => a.lon != null && a.killed + a.serious + a.light > 0);
+  const CELL_LAT = 0.00225; // ~250 m
+  const CELL_LON = 0.0035; // ~250 m at 50°N
+  const cells = new Map();
+  for (const a of inj) {
+    const key = `${Math.round(a.lat / CELL_LAT)}:${Math.round(a.lon / CELL_LON)}`;
+    const c = cells.get(key) ?? { score: 0, lat: 0, lon: 0, w: 0 };
+    const sc = a.killed * 25 + a.serious * 6 + a.light;
+    c.score += sc;
+    c.lat += a.lat * sc;
+    c.lon += a.lon * sc;
+    c.w += sc;
+    cells.set(key, c);
+  }
+  const ranked = [...cells.values()].sort((x, y) => y.score - x.score);
+  const dist = (lat1, lon1, lat2, lon2) => {
+    const dx = (lon2 - lon1) * 71500; // m per degree lon at ~50°N
+    const dy = (lat2 - lat1) * 111200;
+    return Math.hypot(dx, dy);
+  };
+  const picked = [];
+  for (const c of ranked) {
+    const lat = c.lat / c.w, lon = c.lon / c.w;
+    if (picked.some((p) => dist(p.lat, p.lon, lat, lon) < 1500)) continue;
+    picked.push({ lat, lon });
+    if (picked.length >= top * 5) break;
+  }
+  const spots = picked.map((p) => {
+    const near = inj.filter((a) => Math.abs(a.lat - p.lat) < 0.004 && Math.abs(a.lon - p.lon) < 0.006 && dist(p.lat, p.lon, a.lat, a.lon) <= 300);
+    const causes = mode(near.filter((a) => a.cause !== '100').map((a) => a.cause));
+    return {
+      lat: Math.round(p.lat * 1e5) / 1e5,
+      lon: Math.round(p.lon * 1e5) / 1e5,
+      town: titleCase(mode(near.map((a) => a.town)) ?? ''),
+      road: mode(near.map((a) => roadLabel(a.road, a.roadNo))),
+      region: mode(near.map((a) => a.region)),
+      n: near.length,
+      k: near.reduce((s, a) => s + a.killed, 0),
+      s: near.reduce((s, a) => s + a.serious, 0),
+      l: near.reduce((s, a) => s + a.light, 0),
+      cause: causes,
+      causeN: near.filter((a) => a.cause === causes).length,
+      peds: near.filter((a) => a.flags & 4).length,
+      bikes: near.filter((a) => a.flags & 8).length,
+      alcohol: near.filter((a) => a.flags & 1).length,
+    };
+  });
+  // A black spot is a place where crashes keep happening, not one terrible crash.
+  const MIN_CRASHES = 10;
+  return spots
+    .filter((x) => x.n >= MIN_CRASHES)
+    .map((x) => ({ ...x, score: x.k * 25 + x.s * 6 + x.l })) // severity matters more than volume
+    .sort((a, b) => b.score - a.score)
+    .slice(0, top)
+    .map((x, i) => ({ rank: i + 1, ...x }));
 }

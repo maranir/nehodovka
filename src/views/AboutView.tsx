@@ -1,13 +1,17 @@
 import type { Meta } from '../data';
 import { useLang, useT } from '../i18n';
+import { AppBar } from '../components';
 
 export default function AboutView({ meta }: { meta: Meta }) {
   const { t, n, date } = useT();
   const { lang, setLang } = useLang();
+  const maxAcc = Math.max(...meta.years.map((y) => y.accidents));
   return (
+    <>
+    <AppBar />
     <div className="page about">
       <div className="eyebrow">{t({ cs: 'O aplikaci', en: 'About' })}</div>
-      <h1>Nehodovka</h1>
+      <h1>{t({ cs: 'Černý humor. Skutečná data.', en: 'Dark humour. Real data.' })}</h1>
       <p>
         {t({
           cs: 'Dopravní nehody v Česku ze skutečných dat Policie ČR. Smyslem není strašit, ale ukázat, co lidi na silnicích opravdu zabíjí – a že většině z toho jde předejít.',
@@ -21,14 +25,21 @@ export default function AboutView({ meta }: { meta: Meta }) {
       </div>
 
       <h2>{t({ cs: 'Data', en: 'Data' })}</h2>
-      <ul className="facts">
+      <div>
         {meta.years.map((y) => (
-          <li key={y.year}>
-            <b>{y.year}</b>: {n(y.accidents)} {t({ cs: 'nehod', en: 'crashes' })}, {n(y.killed)} {t({ cs: 'mrtvých', en: 'dead' })}
-            {!y.complete && ` (${t({ cs: 'do', en: 'until' })} ${date(y.lastDate)})`}
-          </li>
+          <div className="year-row" key={y.year}>
+            <b className="display">{y.year}</b>
+            <div>
+              <div className="bar" style={{ width: `${(100 * y.accidents) / maxAcc}%` }} />
+              <span className="small muted">
+                {n(y.accidents)} {t({ cs: 'nehod', en: 'crashes' })}
+                {!y.complete && ` · ${t({ cs: 'do', en: 'until' })} ${date(y.lastDate)}`}
+              </span>
+            </div>
+            <b className="c-red">💀 {n(y.killed)}</b>
+          </div>
         ))}
-      </ul>
+      </div>
       <p className="muted small">
         {t({ cs: 'Zdroj', en: 'Source' })}:{' '}
         <a href="https://policie.gov.cz/statistiky-dopravni-nehodovosti" target="_blank" rel="noreferrer">
@@ -57,5 +68,6 @@ export default function AboutView({ meta }: { meta: Meta }) {
         })}
       </p>
     </div>
+    </>
   );
 }

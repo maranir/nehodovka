@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { discoverYear, downloadArchive, FIRST_YEAR } from './sources.mjs';
-import { buildYear, aggregateYear, mergeBlocks, emptyBlock, finalizeBlock, dayOfYearTable, pointsFor } from './build.mjs';
+import { buildYear, aggregateYear, mergeBlocks, emptyBlock, finalizeBlock, dayOfYearTable, pointsFor, blackSpots } from './build.mjs';
 import { REGIONS } from './codes.mjs';
 import { validate } from './validate.mjs';
 
@@ -107,6 +107,7 @@ async function main() {
   };
   outputs['stats.json'] = JSON.stringify(stats);
   outputs['days.json'] = JSON.stringify(dayOfYearTable(allAccidents));
+  outputs['blackspots.json'] = JSON.stringify(blackSpots(Object.values(pointsByRegion).flat()));
 
   const read = (f) => (fs.existsSync(path.join(OUT, f)) ? fs.readFileSync(path.join(OUT, f), 'utf8') : null);
   const changed = Object.entries(outputs).filter(([f, c]) => read(f) !== c).map(([f]) => f);

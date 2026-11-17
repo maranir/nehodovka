@@ -96,3 +96,15 @@ export const pick = (d: Dict, keys: string[], f: 'n' | 'k' = 'k') => keys.reduce
 export const argmax = (arr: number[]) => arr.reduce((best, v, i) => (v > arr[best] ? i : best), 0);
 export const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 export const dayToDate = (day: number) => new Date(day * 86400000);
+
+export interface BlackSpot {
+  rank: number; lat: number; lon: number; town: string; road: string | null; region: string;
+  n: number; k: number; s: number; l: number; cause: string | null; causeN: number; peds: number; bikes: number; alcohol: number;
+}
+export const loadSpots = () => load<BlackSpot[]>('blackspots.json');
+
+/** Block of the most recent complete year (falls back to all data). */
+export function latestFullYear(stats: Stats, meta: Meta) {
+  const y = meta.years.filter((x) => x.complete).at(-1);
+  return y ? { year: y.year, block: stats.years[y.year].national } : { year: meta.years.at(-1)!.year, block: stats.all.national };
+}

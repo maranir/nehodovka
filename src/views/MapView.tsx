@@ -4,11 +4,11 @@ import type { ExpressionSpecification, MapLayerMouseEvent, ErrorEvent } from 'ma
 import 'maplibre-gl/dist/maplibre-gl.css';
 // MapLibre 6 loads its worker as a separate module; point it at the copy Vite bundles.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-import type { Meta, Stats } from '../data';
+import { loadSpots, type BlackSpot, type Meta, type Stats } from '../data';
 import { dayToDate } from '../data';
 import { useT } from '../i18n';
 import { TYPE, causeLabel } from '../labels';
-import { areaStats, loadAllPoints, toGeoJSON, type AreaStats, type Merged } from '../points';
+import { areaStats, distance, loadAllPoints, toGeoJSON, type AreaStats, type Merged } from '../points';
 import { causeTip } from '../tips';
 
 maplibregl.setWorkerUrl(workerUrl);
@@ -28,7 +28,7 @@ function localizeLabels(map: maplibregl.Map, lang: string) {
   }
 }
 
-export default function MapView({ meta, stats }: { meta: Meta; stats: Stats }) {
+export default function MapView({ meta, stats, openSpots = false }: { meta: Meta; stats: Stats; openSpots?: boolean }) {
   const { t, n, p, date, lang } = useT();
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -40,6 +40,15 @@ export default function MapView({ meta, stats }: { meta: Meta; stats: Stats }) {
   const [area, setArea] = useState<(AreaStats & { label: string }) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
+  const [spots, setSpots] = useState<BlackSpot[] | null>(null);
+  const [spotList, setSpotList] = useState(openSpots);
+  const [spot, setSpot] = useState<BlackSpot | null>(null);
+  const [me, setMe] = useState<[number, number] | null>(null);
+  const spotMarker = useRef<maplibregl.Marker | null>(null);
+  useEffect(() => {
+    loadSpots().then(setSpots).catch(() => setSpots([]));
+  }, []);
+  useEffect(() => setSpotList(openSpots), [openSpots]);
 
   // load points
   useEffect(() => {
@@ -143,6 +152,62 @@ export default function MapView({ meta, stats }: { meta: Meta; stats: Stats }) {
     else map.once('load', go);
   }, [lang]);
 
+  // black spots layer
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !spots?.length) return;
+    const add = () => {
+      if (map.getSource('spots')) return;
+      map.addSource('spots', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: spots.map((x) => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [x.lon, x.lat] }, properties: { rank: x.rank } })) },
+      });
+      map.addLayer({
+        id: 'spots',
+        type: 'circle',
+        source: 'spots',
+        minzoom: 8,
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 5, 14, 13],
+          'circle-color': '#000',
+          'circle-stroke-color': '#ff1f3d',
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 14, 3],
+        },
+      });
+      map.addLayer({
+        id: 'spots-label',
+        type: 'symbol',
+        source: 'spots',
+        minzoom: 10,
+        layout: { 'text-field': ['to-string', ['get', 'rank']], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-allow-overlap': true },
+        paint: { 'text-color': '#fff' },
+      });
+      map.on('click', 'spots', (e: MapLayerMouseEvent) => {
+        const r = Number(e.features?.[0]?.properties?.rank);
+        const x = spots.find((y) => y.rank === r);
+        if (x) showSpot(x);
+      });
+    };
+    if (map.getSource('acc')) add();
+    else map.once('idle', add);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spots, pts]);
+
+  const showSpot = (x: BlackSpot) => {
+    const map = mapRef.current;
+    if (!map) return;
+    setSpot(x);
+    setSpotList(false);
+    setArea(null);
+    setSelected(null);
+    spotMarker.current?.remove();
+    const el = document.createElement('div');
+    el.className = 'spot-marker';
+    el.textContent = String(x.rank);
+    spotMarker.current = new maplibregl.Marker({ element: el }).setLngLat([x.lon, x.lat]).addTo(map);
+    map.flyTo({ center: [x.lon, x.lat], zoom: 15.5, offset: [0, -90] });
+  };
+
   // apply filters
   const expr = useMemo(() => {
     const parts: ExpressionSpecification[] = [];
@@ -183,6 +248,7 @@ export default function MapView({ meta, stats }: { meta: Meta; stats: Stats }) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLocating(false);
+        setMe([pos.coords.longitude, pos.coords.latitude]);
         analyze(pos.coords.longitude, pos.coords.latitude, t({ cs: 'Tvoje okolí', en: 'Your area' }));
       },
       () => {
@@ -231,17 +297,21 @@ export default function MapView({ meta, stats }: { meta: Meta; stats: Stats }) {
       </div>
       {!pts && !error && <div className="map-loading">{t({ cs: 'Načítám nehody…', en: 'Loading crashes…' })}</div>}
       <div className="map-actions">
-        <button className="btn primary" onClick={locate} disabled={!pts || locating}>
-          {locating ? '…' : t({ cs: '📍 Moje okolí', en: '📍 My area' })}
+        <button className="fab skull" onClick={() => { setSpotList(true); setArea(null); setSelected(null); setSpot(null); }} disabled={!spots}>
+          ☠️ {t({ cs: 'Černá místa', en: 'Black spots' })}
         </button>
-        <button className="btn" onClick={analyzeCenter} disabled={!pts}>
-          {t({ cs: '⌖ Střed mapy', en: '⌖ Map centre' })}
+        <button className="fab" onClick={analyzeCenter} disabled={!pts}>
+          ⌖ {t({ cs: 'Střed mapy', en: 'Map centre' })}
+        </button>
+        <button className="fab primary" onClick={locate} disabled={!pts || locating}>
+          📍 {locating ? '…' : t({ cs: 'Moje okolí', en: 'My area' })}
         </button>
       </div>
       <div className="legend">
         <span><i style={{ background: '#ff1f3d' }} />{t({ cs: 'smrt', en: 'death' })}</span>
         <span><i style={{ background: '#ff9500' }} />{t({ cs: 'těžké zranění', en: 'serious' })}</span>
         <span><i style={{ background: '#ffd400' }} />{t({ cs: 'lehké', en: 'minor' })}</span>
+        <span><i className="spot" />{t({ cs: 'černé místo', en: 'black spot' })}</span>
       </div>
 
       {error && (
@@ -315,6 +385,63 @@ export default function MapView({ meta, stats }: { meta: Meta; stats: Stats }) {
           )}
         </div>
       )}
+      {spotList && spots && (
+        <div className="sheet">
+          <button className="close" onClick={() => setSpotList(false)} aria-label="close">×</button>
+          <div className="sheet-tag">{t({ cs: `${spots.length} nejhorších míst Česka · ${meta.years[0].year}–${meta.years.at(-1)!.year}`, en: `${spots.length} worst places in Czechia · ${meta.years[0].year}–${meta.years.at(-1)!.year}` })}</div>
+          <h3>☠️ {t({ cs: 'Černá místa', en: 'Black spots' })}</h3>
+          <p className="muted small" style={{ marginTop: 0 }}>
+            {t({
+              cs: 'Místa, kde se opakovaně bourá (min. 10 nehod se zraněním v okruhu 300 m), seřazená podle závažnosti.',
+              en: 'Places with repeated crashes (at least 10 injury crashes within 300 m), ranked by severity.',
+            })}
+            {me ? t({ cs: ' Seřazeno podle vzdálenosti od tebe.', en: ' Sorted by distance from you.' }) : ''}
+          </p>
+          <ul className="spot-list">
+            {(me ? [...spots].sort((a, b) => distance(me[0], me[1], a.lon, a.lat) - distance(me[0], me[1], b.lon, b.lat)) : spots).slice(0, 40).map((x) => (
+              <li key={x.rank}>
+                <button onClick={() => showSpot(x)}>
+                  <span className="rank">{x.rank}</span>
+                  <span>
+                    <span className="name">{x.town || '?'}{x.road ? ` · ${x.road}` : ''}</span>
+                    <span className="sub" style={{ display: 'block' }}>
+                      {n(x.n)} {t({ cs: 'nehod', en: 'crashes' })} · 💀 {x.k} · 🚑 {x.s}{x.cause ? ` · ${t(causeLabel(x.cause))}` : ''}
+                    </span>
+                  </span>
+                  <span className="dist">{me ? fmtKm(distance(me[0], me[1], x.lon, x.lat)) : ''}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {!me && (
+            <button className="btn primary" onClick={locate}>📍 {t({ cs: 'Seřadit podle mé polohy', en: 'Sort by my location' })}</button>
+          )}
+        </div>
+      )}
+
+      {spot && (
+        <div className="sheet">
+          <button className="close" onClick={() => { setSpot(null); spotMarker.current?.remove(); }} aria-label="close">×</button>
+          <div className="sheet-tag">{t({ cs: `Černé místo č. ${spot.rank} · okruh 300 m`, en: `Black spot #${spot.rank} · 300 m radius` })}</div>
+          <h3>{spot.town}{spot.road ? ` · ${spot.road}` : ''}</h3>
+          <div className="toll">
+            <span>{n(spot.n)} {t({ cs: 'nehod se zraněním', en: 'injury crashes' })}</span>
+            <span className="k">💀 {spot.k}</span>
+            <span className="s">🚑 {spot.s}</span>
+            <span className="l">🩹 {spot.l}</span>
+          </div>
+          <ul className="facts">
+            {spot.cause && <li>{t({ cs: 'Typická příčina', en: 'Typical cause' })}: <b>{t(causeLabel(spot.cause))}</b> ({spot.causeN}×)</li>}
+            {spot.peds > 0 && <li>🚶 {t({ cs: 'Sražení chodci', en: 'Pedestrians hit' })}: {spot.peds}</li>}
+            {spot.bikes > 0 && <li>🚲 {t({ cs: 'Cyklisté', en: 'Cyclists' })}: {spot.bikes}</li>}
+            {spot.alcohol > 0 && <li>🍺 {t({ cs: 'Alkohol', en: 'Alcohol' })}: {spot.alcohol}×</li>}
+          </ul>
+          {spot.cause && <p className="tip">💡 {t(causeTip(Number(spot.cause), 0))}</p>}
+          <button className="btn" onClick={() => { setSpot(null); setSpotList(true); }}>← {t({ cs: 'Zpět na seznam', en: 'Back to the list' })}</button>
+        </div>
+      )}
     </div>
   );
 }
+
+const fmtKm = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} km`);

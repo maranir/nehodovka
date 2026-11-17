@@ -5,8 +5,38 @@ import { argmax, pick, sum, type Block, type DayRow, type Meta } from './data';
 import type { T } from './i18n';
 import { BRAND, CAUSE, MONTH, WEEKDAY } from './labels';
 
+export type CardCat = 'people' | 'speed' | 'alcohol' | 'time' | 'animals' | 'weird' | 'myth';
+export type CardVariant = 'black' | 'white' | 'red';
+
+export const CATS: { id: CardCat | 'all'; cs: string; en: string }[] = [
+  { id: 'all', cs: 'Vše', en: 'All' },
+  { id: 'people', cs: '🧍 Lidi', en: '🧍 People' },
+  { id: 'speed', cs: '🏎️ Rychlost & chyby', en: '🏎️ Speed & errors' },
+  { id: 'alcohol', cs: '🍺 Alkohol & drogy', en: '🍺 Booze & drugs' },
+  { id: 'time', cs: '🕓 Kdy', en: '🕓 When' },
+  { id: 'animals', cs: '🦌 Zvířata', en: '🦌 Animals' },
+  { id: 'weird', cs: '🤯 Kuriozity', en: '🤯 Weird' },
+  { id: 'myth', cs: '🧠 Mýty', en: '🧠 Myths' },
+];
+
+/** category + colour of every card id */
+const CARD_META: Record<string, [CardCat, CardVariant]> = {
+  today: ['time', 'red'], phone: ['speed', 'black'], belts: ['people', 'black'], trees: ['speed', 'black'], hour: ['time', 'black'],
+  weekday: ['time', 'black'], month: ['time', 'black'], weather: ['myth', 'white'], worstday: ['time', 'black'], calmest: ['time', 'white'],
+  alcohol: ['alcohol', 'black'], moto: ['people', 'black'], animals: ['animals', 'black'], reflective: ['people', 'black'],
+  outoftown: ['myth', 'white'], motorway: ['myth', 'white'], men: ['people', 'black'], young: ['people', 'black'], tired: ['speed', 'black'],
+  damage: ['weird', 'black'], brands: ['myth', 'white'], hitrun: ['weird', 'black'], train: ['weird', 'black'], speed: ['speed', 'black'],
+  bike: ['people', 'black'], wheel: ['weird', 'white'], drugs: ['alcohol', 'black'], night: ['time', 'black'], deadlyhour: ['time', 'black'],
+  zebra: ['people', 'black'], innocent: ['people', 'red'], seniors: ['people', 'black'], passengers: ['people', 'black'],
+  aggressive: ['speed', 'black'], tailgate: ['speed', 'black'], redlight: ['speed', 'black'], chase: ['weird', 'white'], skid: ['speed', 'black'],
+  fire: ['weird', 'black'], trend: ['myth', 'white'], tram: ['weird', 'black'], pets: ['animals', 'white'], prague: ['myth', 'white'],
+  refused: ['alcohol', 'white'],
+};
+
 export interface Card {
   id: string;
+  cat?: CardCat;
+  variant?: CardVariant;
   tag: string;
   big: string;
   text: string;
@@ -16,7 +46,7 @@ export interface Card {
 
 const OCTAVIA_PRICE = 750_000; // rough price of a new Škoda Octavia, CZK
 
-export function buildCards(S: Block, meta: Meta, days: Record<string, DayRow>, t: T, today = new Date()): Card[] {
+export function buildCards(S: Block, meta: Meta, days: Record<string, DayRow>, t: T, today = new Date(), regions?: Record<string, Block>): Card[] {
   const cs = t.lang === 'cs';
   const L = (c: string, e: string) => (cs ? c : e);
   const from = meta.years[0].year;
@@ -95,7 +125,7 @@ export function buildCards(S: Block, meta: Meta, days: Record<string, DayRow>, t
   add({
     id: 'hour',
     tag: L('Smrtka má pracovní dobu', 'Death keeps office hours'),
-    big: `${hk}:00–${hk + 1}:00`,
+    big: `${hk}–${hk + 1} h`,
     text: L(
       `Nejvíc mrtvých (${t.n(S.hour.k[hk])}) ${since} připadá na tuhle hodinu. Ne na půlnoc, ne na pátou ráno. Na odpoledne, kdy jedou všichni.`,
       `The deadliest hour ${since} (${t.n(S.hour.k[hk])} dead). Not midnight, not 5 a.m. The afternoon, when everyone's on the road.`,
@@ -370,5 +400,276 @@ export function buildCards(S: Block, meta: Meta, days: Record<string, DayRow>, t
     });
   }
 
+
+  // ================= v2 cards =================
+
+  // --- wheel fell off ---
+  const wheel = S.cause['609'];
+  if (wheel?.n) {
+    add({
+      id: 'wheel',
+      tag: L('Technika', 'Mechanics'),
+      big: t.n(wheel.n),
+      text: L(`nehod ${since} způsobilo upadlé kolo. Celé kolo. Za jízdy.`, `crashes ${since} were caused by a wheel falling off. A whole wheel. While driving.`),
+      punch: L('Dotáhnout šrouby trvá pět minut. Hledat kolo v řepce celé odpoledne.', 'Tightening the bolts takes five minutes. Finding the wheel in a field takes all afternoon.'),
+      lesson: L('Po přezutí pneumatik dotáhni kola znovu po 50–100 km.', 'After changing tyres, re-torque the wheel nuts after 50–100 km.'),
+    });
+  }
+
+  // --- drugs ---
+  const dt = S.drugs.byType;
+  if ((dt['3'] ?? 0) > 0) {
+    const meth = dt['3'] ?? 0, amph = dt['2'] ?? 0, thc = dt['1'] ?? 0;
+    add({
+      id: 'drugs',
+      tag: L('Drogy', 'Drugs'),
+      big: t.n(meth),
+      text: L(
+        `viníků nehod ${since} mělo v sobě pervitin. Amfetamin ${t.n(amph)}, tráva „jen“ ${t.n(thc)}. Nejčastější droga za volantem tedy není marihuana.`,
+        `at-fault drivers ${since} were on meth. Amphetamine: ${t.n(amph)}, cannabis "only" ${t.n(thc)}. The most common drug behind the wheel is not weed.`,
+      ),
+      punch: L('Česká specialita, kterou opravdu nechceš potkat v protisměru.', 'A Czech speciality you really don\'t want to meet in the oncoming lane.'),
+      lesson: L('Drogy mění vnímání rychlosti i vzdálenosti. A testy je najdou i druhý den.', 'Drugs distort your sense of speed and distance. And tests find them the next day too.'),
+    });
+  }
+
+  // --- night without street lights ---
+  const day = S.vis['1'], dark = S.vis['6'];
+  if (day?.n && dark?.n) {
+    const r = dark.k / dark.n / (day.k / day.n);
+    add({
+      id: 'night',
+      tag: L('Tma', 'Darkness'),
+      big: `${t.p(r)}×`,
+      text: L('smrtelnější je nehoda v noci na neosvětlené silnici než nehoda za dne.', 'deadlier is a crash at night on an unlit road than one in daylight.'),
+      punch: L('Tma nezabíjí. Jen ti neukáže, co tě zabije.', "Darkness doesn't kill. It just won't show you what will."),
+      lesson: L('V noci jezdi tak, abys zastavil na vzdálenost, kam ti svítí světla.', 'At night, drive so you can stop within the distance your headlights reach.'),
+    });
+  }
+
+  // --- deadliest hour per crash ---
+  const ratios = S.hour.k.map((k, i) => (S.hour.n[i] > 1500 ? k / S.hour.n[i] : 0));
+  const worstH = argmax(ratios);
+  const safest = ratios.reduce((b, v, i) => (v > 0 && v < ratios[b] ? i : b), worstH);
+  if (ratios[safest] > 0) {
+    add({
+      id: 'deadlyhour',
+      tag: L('Hodina pravdy', 'Witching hour'),
+      big: `${t.p(ratios[worstH] / ratios[safest])}×`,
+      text: L(
+        `smrtelnější je nehoda mezi ${worstH}. a ${worstH + 1}. hodinou než nehoda mezi ${safest}. a ${safest + 1}. Méně aut, víc mrtvých.`,
+        `deadlier is a crash between ${worstH}:00 and ${worstH + 1}:00 than one between ${safest}:00 and ${safest + 1}:00. Fewer cars, more dead.`,
+      ),
+      punch: L('V tuhle hodinu jezdí jen pekaři, záchranáři a lidi, co by neměli.', 'At this hour the roads belong to bakers, paramedics and people who shouldn\'t be driving.'),
+      lesson: L('Prázdná silnice svádí k rychlosti a únava k mikrospánku. Dvojitě pozor.', 'Empty roads tempt you to speed, fatigue tempts you to nod off. Double caution.'),
+    });
+  }
+
+  // --- pedestrians killed on zebra crossings ---
+  const zebra = S.peds.situation['4'];
+  if (zebra?.k) {
+    add({
+      id: 'zebra',
+      tag: L('Přechody', 'Crossings'),
+      big: t.n(zebra.k),
+      text: L(`chodců ${since} zemřelo přímo na přechodu pro chodce. Sraženo tam bylo ${t.n(zebra.n)} lidí.`, `pedestrians ${since} died right on a zebra crossing. ${t.n(zebra.n)} people were hit there.`),
+      punch: L('Zebra je dopravní značka. Ne neprůstřelná vesta.', 'A zebra crossing is a road marking. Not a bulletproof vest.'),
+      lesson: L('Na přechodu máš přednost, ne nesmrtelnost. Než vstoupíš, chyť oční kontakt s řidičem.', 'On a crossing you have priority, not immortality. Make eye contact with the driver before you step out.'),
+    });
+  }
+
+  // --- innocent pedestrians (serious card, no joke) ---
+  const good = S.peds.behaviour['1'];
+  if (good?.k) {
+    add({
+      id: 'innocent',
+      tag: L('Bez legrace', 'No joke'),
+      big: t.n(good.k),
+      text: L(`chodců ${since} zemřelo, přestože se podle policie chovali naprosto správně.`, `pedestrians ${since} died even though, according to the police, they did everything right.`),
+      punch: L('Tady vtip nebude. Někdy uděláš všechno dobře a stejně to nestačí.', 'No joke here. Sometimes you do everything right and it still isn\'t enough.'),
+      lesson: L('Řidiči: u přechodů, škol a zastávek jeď tak, abys zastavil vždycky.', 'Drivers: near crossings, schools and stops, drive so you can always stop.'),
+    });
+  }
+
+  // --- seniors on foot ---
+  const pa = S.peds.killedAge;
+  if (sum(pa)) {
+    add({
+      id: 'seniors',
+      tag: L('Senioři', 'Seniors'),
+      big: t.pct(pa[8], sum(pa)),
+      text: L('mrtvých chodců bylo starších 75 let. Přitom tvoří jen asi desetinu populace.', 'of pedestrians killed were over 75 – a group that is only about a tenth of the population.'),
+      punch: L('Babička nepřebíhá. Babička přechází. Tempem, se kterým tvoje navigace nepočítá.', "Grandma doesn't dash across. She crosses. At a pace your sat-nav didn't plan for."),
+      lesson: L('U zastávek, nemocnic a obchodů počítej s pomalým chodcem. A s tím, že tě neslyší.', 'Near stops, hospitals and shops, expect slow pedestrians – who may not hear you.'),
+    });
+  }
+
+  // --- passengers ---
+  const role = S.persons.role;
+  const pass = (role['2'] ?? 0) + (role['3'] ?? 0) + (role['4'] ?? 0);
+  if (pass) {
+    add({
+      id: 'passengers',
+      tag: L('Spolujezdci', 'Passengers'),
+      big: t.n(pass),
+      text: L(`spolujezdců zemřelo ${since}. Nikdo z nich neřídil.`, `passengers died ${since}. None of them was driving.`),
+      punch: L('Když řidič řekne „drž se“, není to fráze. Je to předpověď.', 'When the driver says "hold on", it\'s not a figure of speech. It\'s a forecast.'),
+      lesson: L('Jako spolujezdec máš právo říct „zpomal“. A právo vystoupit.', 'As a passenger you have the right to say "slow down". And the right to get out.'),
+    });
+  }
+
+  // --- aggressive driving ---
+  const agg = S.cause['506'];
+  if (agg?.n) {
+    add({
+      id: 'aggressive',
+      tag: L('Agrese', 'Road rage'),
+      big: t.n(agg.n),
+      text: L(`nehod ${since} způsobila „bezohledná, agresivní, neohleduplná jízda“. ${t.n(agg.k)} mrtvých.`, `crashes ${since} were caused by "reckless, aggressive, inconsiderate driving". ${t.n(agg.k)} dead.`),
+      punch: L('Předjel jsi ho a byl v cíli o 40 sekund dřív. Gratulujeme ke 40 sekundám.', 'You overtook him and arrived 40 seconds earlier. Congratulations on your 40 seconds.'),
+      lesson: L('Agresivní jízda ušetří minuty. Nehoda vezme roky.', 'Aggressive driving saves minutes. A crash takes years.'),
+    });
+  }
+
+  // --- tailgating ---
+  const tg = S.cause['503'];
+  if (tg?.n) {
+    add({
+      id: 'tailgate',
+      tag: L('Odstup', 'Following distance'),
+      big: t.n(tg.n),
+      text: L(`nehod ${since} kvůli nedodržení bezpečné vzdálenosti. Typicky: ťuk zezadu v koloně.`, `crashes ${since} from not keeping a safe distance. Classic: a rear-end tap in traffic.`),
+      punch: L('Kdo ti jede na zadku, nespěchá. Jen se chce seznámit. S tvým kufrem.', "Whoever's glued to your bumper isn't in a hurry. They just want to meet your boot."),
+      lesson: L('Dvě sekundy odstupu. Počítej „jedna-dvacet-jedna, jedna-dvacet-dva“.', 'Two seconds of gap. Count "one-thousand-one, one-thousand-two".'),
+    });
+  }
+
+  // --- red light ---
+  const red = S.cause['401'];
+  if (red?.n) {
+    add({
+      id: 'redlight',
+      tag: L('Semafor', 'Traffic lights'),
+      big: t.n(red.n),
+      text: L(`nehod ${since} po jízdě na červenou. ${t.n(red.k)} mrtvých.`, `crashes ${since} after running a red light. ${t.n(red.k)} dead.`),
+      punch: L('Oranžová neznamená „šlápni na to“. Ani tmavě oranžová.', 'Amber does not mean "floor it". Not even dark amber.'),
+      lesson: L('Na oranžovou zastav, pokud to jde bezpečně. Pár sekund u semaforu nikoho nezabilo.', 'On amber, stop if you safely can. Nobody ever died from waiting at a light.'),
+    });
+  }
+
+  // --- police chase ---
+  const chase = S.cause['515'];
+  if (chase?.n) {
+    add({
+      id: 'chase',
+      tag: L('Akční film', 'Action movie'),
+      big: t.n(chase.n),
+      text: L(`nehod ${since} se stalo při policejním zákroku nebo pronásledování.`, `crashes ${since} happened during a police intervention or pursuit.`),
+      punch: L('Ujet policii je skvělý plán. Až do první zatáčky.', 'Outrunning the police is a great plan. Right up to the first bend.'),
+      lesson: L('Pokuta je levnější než pronásledování. Vždycky.', 'A fine is cheaper than a chase. Always.'),
+    });
+  }
+
+  // --- skids ---
+  if (S.skid) {
+    add({
+      id: 'skid',
+      tag: L('Smyk', 'Skids'),
+      big: t.n(S.skid),
+      text: L(`vozidel ${since} dostalo při nehodě smyk.`, `vehicles ${since} skidded during a crash.`),
+      punch: L('Smyk je rychlokurz fyziky. Známku dostává karoserie.', 'A skid is a crash course in physics. The bodywork gets the grade.'),
+      lesson: L('Smyk nevzniká v zatáčce. Vzniká 200 metrů před ní, rychlostí.', "A skid doesn't start in the bend. It starts 200 metres before it, with your speed."),
+    });
+  }
+
+  // --- fire ---
+  if (S.fire) {
+    add({
+      id: 'fire',
+      tag: L('Oheň', 'Fire'),
+      big: t.n(S.fire),
+      text: L(`vozidel ${since} po nehodě začalo hořet.`, `vehicles ${since} caught fire after a crash.`),
+      punch: L('Hasicí přístroj v kufru: nejlevnější díl auta, který může zachránit celé auto.', 'The extinguisher in your boot: the cheapest part of the car that can save the whole car.'),
+      lesson: L('Měj hasicí přístroj po ruce, ne pod kufrem s nákupem. A po nehodě vypni motor.', 'Keep the extinguisher reachable, not under the shopping. And switch off the engine after a crash.'),
+    });
+  }
+
+  // --- refused breath test ---
+  if (S.alcohol.refused) {
+    add({
+      id: 'refused',
+      tag: L('Strategie', 'Strategy'),
+      big: t.n(S.alcohol.refused),
+      text: L(`viníků nehod ${since} odmítlo dechovou zkoušku.`, `at-fault drivers ${since} refused a breath test.`),
+      punch: L('Odvážná taktika. Odmítnutí se trestá stejně jako opilost. Takže v podstatě přiznání s extra krokem.', 'Bold move. Refusing is punished like drunk driving. So basically a confession with extra steps.'),
+      lesson: L('Odmítnutí zkoušky = stejný trest jako jízda pod vlivem. Nevyplatí se.', 'Refusing the test = same penalty as driving under the influence. Not worth it.'),
+    });
+  }
+
+  // --- trend: good news ---
+  const full = meta.years.filter((y) => y.complete);
+  if (full.length >= 2) {
+    const first = full[0], last = full.at(-1)!;
+    const down = last.killed < first.killed;
+    add({
+      id: 'trend',
+      tag: L('Dobrá zpráva', 'Good news'),
+      big: `${down ? '−' : '+'}${t.pct(Math.abs(first.killed - last.killed), first.killed)}`,
+      text: L(
+        `mrtvých v roce ${last.year} oproti roku ${first.year} (${full.map((y) => `${y.year}: ${t.n(y.killed)}`).join(', ')}).`,
+        `deaths in ${last.year} compared with ${first.year} (${full.map((y) => `${y.year}: ${t.n(y.killed)}`).join(', ')}).`,
+      ),
+      punch: down
+        ? L('Smrtka má na českých silnicích klesající tržby. Pomoz jí zkrachovat.', 'Death\'s revenue on Czech roads is falling. Help it go bankrupt.')
+        : L('Smrtka letos přidává. Nedělej jí radost.', "Death is picking up the pace this year. Don't give it the satisfaction."),
+      lesson: L('Každý mrtvý míň je něčí táta, máma nebo kamarád, který přišel domů.', 'Every death less is someone\'s parent or friend who made it home.'),
+    });
+  }
+
+  // --- trams ---
+  const tram = S.type['8'];
+  if (tram?.n) {
+    add({
+      id: 'tram',
+      tag: L('Tramvaje', 'Trams'),
+      big: t.n(tram.n),
+      text: L(`srážek s tramvají ${since}.`, `collisions with trams ${since}.`),
+      punch: L('Tramvaj neuhne. Nikdy. Má to v popisu práce. A v kolejích.', 'A tram never swerves. It\'s in the job description. And in the rails.'),
+      lesson: L('Tramvaj brzdí zhruba třikrát déle než auto. Nevjížděj jí do cesty.', 'A tram needs roughly three times longer to stop than a car. Stay out of its way.'),
+    });
+  }
+
+  // --- pets & farm animals ---
+  const dogs = an['18']?.n ?? 0, cats = an['19']?.n ?? 0, horses = an['15']?.n ?? 0, cows = an['14']?.n ?? 0, sheep = an['17']?.n ?? 0, hens = an['20']?.n ?? 0;
+  if (dogs) {
+    add({
+      id: 'pets',
+      tag: L('Domácí mazlíčci', 'Pets & farm'),
+      big: `🐕 ${t.n(dogs)}`,
+      text: L(`srážek se psem ${since}. Kočky: ${t.n(cats)}. Koně: ${t.n(horses)}. Krávy: ${t.n(cows)}. Ovce: ${t.n(sheep)}. Slepice: ${t.n(hens)}.`, `collisions with dogs ${since}. Cats: ${t.n(cats)}. Horses: ${t.n(horses)}. Cows: ${t.n(cows)}. Sheep: ${t.n(sheep)}. Chickens: ${t.n(hens)}.`),
+      punch: L('Kočky mají devět životů a lepší reflexy. Psi mají páníčky, co je pustí bez vodítka.', 'Cats have nine lives and better reflexes. Dogs have owners who let them off the lead.'),
+      lesson: L('Pes u silnice patří na vodítko. A za tmy na něj reflexní obojek.', 'Dogs near roads belong on a lead – and in a reflective collar after dark.'),
+    });
+  }
+
+  // --- Prague: jams save lives ---
+  const pha = regions?.['00'];
+  if (pha && regions) {
+    const others = Object.entries(regions).filter(([c]) => c !== '00').map(([c, b]) => ({ c, r: b.killed / b.accidents }));
+    const worst = others.sort((a, b) => b.r - a.r)[0];
+    add({
+      id: 'prague',
+      tag: L('Praha vs. zbytek', 'Prague vs. the rest'),
+      big: `1 : ${t.n(pha.accidents / Math.max(1, pha.killed))}`,
+      text: L(
+        `V Praze zemře člověk zhruba na každou ${t.n(pha.accidents / Math.max(1, pha.killed))}. nehodu. V kraji ${meta.regions[worst.c].cs} na každou ${t.n(1 / worst.r)}.`,
+        `In Prague, roughly one person dies per ${t.n(pha.accidents / Math.max(1, pha.killed))} crashes. In ${meta.regions[worst.c].en}: one per ${t.n(1 / worst.r)}.`,
+      ),
+      punch: L('Pražská zácpa: nejlepší airbag v republice.', 'Prague traffic jams: the best airbag in the country.'),
+      lesson: L('Bourá se všude. Umírá se tam, kde se jezdí rychle.', 'People crash everywhere. They die where people drive fast.'),
+    });
+  }
+
+  for (const c of cards) [c.cat, c.variant] = CARD_META[c.id] ?? ['weird', 'black'];
   return cards;
 }

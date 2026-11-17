@@ -207,6 +207,56 @@ export function buildQuestions(stats: Stats, meta: Meta, t: T, r: () => number):
     L(`${t.n(S.animal['1']?.n ?? 0)}. A to jen ty nahlášené.`, `${t.n(S.animal['1']?.n ?? 0)}. And those are just the reported ones.`),
     L('Srnka je nejúspěšnější český tuner karoserií.', 'The roe deer: Czechia\'s most prolific body-shop customer acquisition channel.'), r));
 
+
+  // 14. most common drug
+  const dt = S.drugs.byType;
+  const DRUG: Record<string, [string, string]> = { '1': ['marihuana (THC)', 'cannabis (THC)'], '2': ['amfetamin', 'amphetamine'], '3': ['pervitin', 'meth'], '4': ['opiáty', 'opiates'], '5': ['benzodiazepiny', 'benzodiazepines'] };
+  const drugTop = Object.entries(dt).filter(([k]) => DRUG[k]).sort((a, b) => b[1] - a[1])[0];
+  if (drugTop) {
+    qs.push(mc('drug', L('Která droga se u viníků nehod najde nejčastěji?', 'Which drug is found most often in at-fault drivers?'),
+      DRUG[drugTop[0]][cs ? 0 : 1], Object.keys(DRUG).filter((k) => k !== drugTop[0]).map((k) => DRUG[k][cs ? 0 : 1]),
+      L(`${DRUG[drugTop[0]][0]}: ${t.n(drugTop[1])}× ${since}. Tráva: ${t.n(dt['1'] ?? 0)}×.`, `${DRUG[drugTop[0]][1]}: ${t.n(drugTop[1])} times ${since}. Cannabis: ${t.n(dt['1'] ?? 0)}.`),
+      L('Breaking Bad, česká verze: méně chemie, víc svodidel.', 'Breaking Bad, Czech edition: less chemistry, more crash barriers.'), r));
+  }
+
+  // 15. wheel fell off
+  const wheel = S.cause['609']?.n ?? 0;
+  if (wheel > 20) {
+    qs.push(numeric('wheel', L(`Kolikrát ${since} způsobilo nehodu kolo, které upadlo za jízdy?`, `How many crashes ${since} were caused by a wheel falling off while driving?`),
+      wheel, (x) => t.n(Math.round(x)),
+      L(`${t.n(wheel)}×. Celé kolo. Za jízdy.`, `${t.n(wheel)} times. A whole wheel. While driving.`),
+      L('Kolo se většinou vrátí. Do protisměru.', 'The wheel usually comes back. Into the oncoming lane.'), r));
+  }
+
+  // 16. pedestrians killed on a zebra crossing
+  const zebra = S.peds.situation['4']?.k ?? 0;
+  if (zebra) {
+    qs.push(numeric('zebra', L(`Kolik chodců zemřelo ${since} přímo na přechodu pro chodce?`, `How many pedestrians died ${since} right on a zebra crossing?`),
+      zebra, (x) => t.n(Math.round(x)),
+      L(`${t.n(zebra)}. Přechod dává přednost, ne ochranu.`, `${t.n(zebra)}. A crossing gives you priority, not protection.`),
+      L('Bílé pruhy nejsou silové pole.', 'White stripes are not a force field.'), r));
+  }
+
+  // 17. night deadliness multiplier
+  const dn = S.vis['6'], dd = S.vis['1'];
+  if (dn?.n && dd?.n) {
+    const m = dn.k / dn.n / (dd.k / dd.n);
+    qs.push(numeric('night', L('Kolikrát smrtelnější je nehoda v noci na neosvětlené silnici než nehoda ve dne?', 'How much deadlier is a crash at night on an unlit road than in daylight?'),
+      m, (x) => `${t.p(Math.max(1.1, x))}×`,
+      L(`Zhruba ${t.p(m)}×.`, `About ${t.p(m)}×.`),
+      L('Světla ti ukážou 60 metrů. Při 90 km/h zastavuješ na 70.', 'Low beams show you 60 metres. At 90 km/h you need 70 to stop.'), r));
+  }
+
+  // 18. which obstacle kills the most
+  const OBST: Record<string, [string, string]> = { '1': ['strom', 'a tree'], '2': ['sloup', 'a pole'], '4': ['svodidla', 'a crash barrier'], '6': ['zeď nebo most', 'a wall or bridge'], '3': ['patník nebo značka', 'a bollard or sign post'] };
+  const obTop = Object.entries(S.obstacle).filter(([k]) => OBST[k]).sort((a, b) => b[1].k - a[1].k)[0];
+  if (obTop) {
+    qs.push(mc('obstacle', L('Náraz do čeho zabíjí nejvíc lidí?', 'Hitting what kills the most people?'),
+      OBST[obTop[0]][cs ? 0 : 1], Object.keys(OBST).filter((k) => k !== obTop[0]).map((k) => OBST[k][cs ? 0 : 1]),
+      L(`${OBST[obTop[0]][0]}: ${t.n(obTop[1].k)} mrtvých ${since}.`, `${OBST[obTop[0]][1]}: ${t.n(obTop[1].k)} dead ${since}.`),
+      L('Stromy: tiché, trpělivé, neúprosné.', 'Trees: silent, patient, merciless.'), r));
+  }
+
   return shuffle(qs, r);
 }
 
