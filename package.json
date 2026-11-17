@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "data": "node scripts/pipeline/run.mjs",
-    "test": "node --test scripts/pipeline/*.test.mjs"
+    "test": "node --test scripts/pipeline/*.test.mjs",
+    "content": "tsx scripts/content/dump.ts > content/content.json && python3 scripts/content/build_xlsx.py content/content.json content/nehodovka-obsah.xlsx"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
@@ -24,6 +25,7 @@
     "@vitejs/plugin-react": "^6.3.0",
     "node-unrar-js": "^2.0.2",
     "proj4": "^2.23.0",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vite-plugin-pwa": "^2.0.0"

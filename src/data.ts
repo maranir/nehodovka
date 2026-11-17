@@ -71,7 +71,7 @@ export interface Points {
 
 export const FLAGS = { ALCOHOL: 1, DRUGS: 2, PEDESTRIAN: 4, BIKE: 8, MOTO: 16, ANIMAL: 32, HIT_AND_RUN: 64, TRUCK: 128 } as const;
 
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env?.BASE_URL ?? '/';
 const cache = new Map<string, Promise<unknown>>();
 function load<T>(file: string): Promise<T> {
   if (!cache.has(file)) {
