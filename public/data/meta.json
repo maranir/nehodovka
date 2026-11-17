@@ -1,0 +1,247 @@
+{
+ "generatedAt": "2026-11-17T12:20:03.286Z",
+ "years": [
+  {
+   "year": 2023,
+   "complete": true,
+   "accidents": 94945,
+   "killed": 455,
+   "lastDate": "2023-12-31",
+   "source": {
+    "file": "data2023.rar",
+    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2023",
+    "url": "https://policie.gov.cz/documents/data2023?disposition=attachment",
+    "lastModified": "Wed, 20 May 2026 11:23:42 GMT"
+   },
+   "skipped": 0
+  },
+  {
+   "year": 2024,
+   "complete": true,
+   "accidents": 92217,
+   "killed": 438,
+   "lastDate": "2024-12-31",
+   "source": {
+    "file": "data2024.rar",
+    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2024",
+    "url": "https://policie.gov.cz/documents/data2024?disposition=attachment",
+    "lastModified": "Wed, 20 May 2026 11:27:42 GMT"
+   },
+   "skipped": 0
+  },
+  {
+   "year": 2025,
+   "complete": true,
+   "accidents": 85518,
+   "killed": 421,
+   "lastDate": "2025-12-31",
+   "source": {
+    "file": "data2025.rar",
+    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2025",
+    "url": "https://policie.gov.cz/documents/data2025?disposition=attachment",
+    "lastModified": "Wed, 20 May 2026 11:40:55 GMT"
+   },
+   "skipped": 0
+  },
+  {
+   "year": 2026,
+   "complete": false,
+   "accidents": 74643,
+   "killed": 362,
+   "lastDate": "2026-11-04",
+   "source": {
+    "file": "Data_web_10_2026.rar",
+    "page": "https://policie.gov.cz/statistiky-dopravni-nehodovosti-za-rok-2026",
+    "url": "https://policie.gov.cz/documents/dataweb102026?disposition=attachment",
+    "lastModified": "Fri, 06 Nov 2026 13:25:18 GMT"
+   },
+   "skipped": 0
+  }
+ ],
+ "latestDate": "2026-11-04",
+ "regions": {
+  "14": {
+   "key": "OLK",
+   "cs": "Olomoucký kraj",
+   "en": "Olomouc Region",
+   "pop": 631226,
+   "bbox": [
+    14.29614,
+    49.28039,
+    17.90271,
+    50.44243
+   ],
+   "points": 4670
+  },
+  "15": {
+   "key": "ZLK",
+   "cs": "Zlínský kraj",
+   "en": "Zlín Region",
+   "pop": 573436,
+   "bbox": [
+    17.11711,
+    48.89263,
+    18.39342,
+    49.52808
+   ],
+   "points": 4582
+  },
+  "16": {
+   "key": "VYS",
+   "cs": "Kraj Vysočina",
+   "en": "Vysočina",
+   "pop": 515563,
+   "bbox": [
+    14.90228,
+    48.96363,
+    16.41472,
+    49.83959
+   ],
+   "points": 4784
+  },
+  "17": {
+   "key": "PAK",
+   "cs": "Pardubický kraj",
+   "en": "Pardubice Region",
+   "pop": 527761,
+   "bbox": [
+    15.3742,
+    49.59428,
+    16.83405,
+    50.17053
+   ],
+   "points": 4087
+  },
+  "18": {
+   "key": "LBK",
+   "cs": "Liberecký kraj",
+   "en": "Liberec Region",
+   "pop": 448834,
+   "bbox": [
+    14.37882,
+    50.47888,
+    15.94459,
+    51.01803
+   ],
+   "points": 4119
+  },
+  "19": {
+   "key": "KVK",
+   "cs": "Karlovarský kraj",
+   "en": "Karlovy Vary Region",
+   "pop": 287994,
+   "bbox": [
+    12.13384,
+    49.90137,
+    13.29749,
+    50.42255
+   ],
+   "points": 2372
+  },
+  "00": {
+   "key": "PHA",
+   "cs": "Hlavní město Praha",
+   "en": "Prague",
+   "pop": 1397880,
+   "bbox": [
+    14.17237,
+    49.8811,
+    18.29691,
+    50.17104
+   ],
+   "points": 7648
+  },
+  "01": {
+   "key": "STC",
+   "cs": "Středočeský kraj",
+   "en": "Central Bohemia",
+   "pop": 1455940,
+   "bbox": [
+    13.41036,
+    49.3537,
+    17.43637,
+    50.60384
+   ],
+   "points": 11440
+  },
+  "02": {
+   "key": "JHC",
+   "cs": "Jihočeský kraj",
+   "en": "South Bohemia",
+   "pop": 652303,
+   "bbox": [
+    13.57679,
+    48.57174,
+    15.77559,
+    50.04621
+   ],
+   "points": 6526
+  },
+  "03": {
+   "key": "PLK",
+   "cs": "Plzeňský kraj",
+   "en": "Plzeň Region",
+   "pop": 614393,
+   "bbox": [
+    12.48795,
+    48.98339,
+    13.8046,
+    50.07852
+   ],
+   "points": 5415
+  },
+  "04": {
+   "key": "ULK",
+   "cs": "Ústecký kraj",
+   "en": "Ústí nad Labem Region",
+   "pop": 811069,
+   "bbox": [
+    12.96733,
+    50.08622,
+    14.64493,
+    51.03134
+   ],
+   "points": 6577
+  },
+  "05": {
+   "key": "HKK",
+   "cs": "Královéhradecký kraj",
+   "en": "Hradec Králové Region",
+   "pop": 555268,
+   "bbox": [
+    15.11998,
+    50.05001,
+    16.58009,
+    50.75783
+   ],
+   "points": 4069
+  },
+  "06": {
+   "key": "JHM",
+   "cs": "Jihomoravský kraj",
+   "en": "South Moravia",
+   "pop": 1226749,
+   "bbox": [
+    12.86434,
+    48.68646,
+    18.45258,
+    50.6677
+   ],
+   "points": 9394
+  },
+  "07": {
+   "key": "MSK",
+   "cs": "Moravskoslezský kraj",
+   "en": "Moravia-Silesia",
+   "pop": 1177989,
+   "bbox": [
+    17.18742,
+    49.39868,
+    18.84113,
+    50.28476
+   ],
+   "points": 7644
+  }
+ },
+ "source": "Policie ČR – Statistiky dopravní nehodovosti (https://policie.gov.cz/statistiky-dopravni-nehodovosti)"
+}

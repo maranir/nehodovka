@@ -1,0 +1,85 @@
+name: Data update & deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every Monday 03:17 UTC. The police publish new data roughly monthly; weekly polling keeps lag low.
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Publish even if the safety check fails (e.g. police re-published smaller data)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  data:
+    # Only refresh data on the schedule or manual runs; regular pushes just rebuild the site.
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.pipeline.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - uses: actions/cache@v4
+        with:
+          path: .cache/raw
+          key: police-raw-${{ github.run_id }}
+          restore-keys: police-raw-
+      - name: Download and process police data
+        id: pipeline
+        run: npm run data -- ${{ inputs.force && '--force' || '' }}
+      - name: Commit updated data
+        if: steps.pipeline.outputs.changed == 'true'
+        run: |
+          git config user.name "nehodovka-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          git commit -m "data: update from Policie ČR ($(node -p "require('./public/data/meta.json').latestDate"))"
+          git push origin HEAD:main
+
+  deploy:
+    needs: data
+    # Run after a data refresh, or on a plain push (when the data job is skipped).
+    if: always() && (needs.data.result == 'success' || needs.data.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
