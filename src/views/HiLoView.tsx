@@ -3,6 +3,7 @@ import type { Meta, Stats } from '../data';
 import { useT } from '../i18n';
 import { hiloItems, type HiLoItem } from '../hilo';
 import { AppBar } from '../components';
+import { IconAlert, IconRefresh, IconShare, IconTrophy } from '../icons';
 import CountUp from '../CountUp';
 import { share } from '../share';
 import { getNum, setBest } from '../storage';
@@ -67,14 +68,14 @@ export default function HiLoView({ meta, stats }: { meta: Meta; stats: Stats }) 
       <>
         <AppBar back="games" title={title} />
         <div className="page center">
-          <div className="big-emoji">{streak >= 5 ? '🏆' : '💥'}</div>
+          <div className={`end-icon ${streak >= 5 ? 'ok' : 'ko'}`}>{streak >= 5 ? <IconTrophy /> : <IconAlert />}</div>
           <div className="eyebrow">{t({ cs: 'Série', en: 'Streak' })}{record ? t({ cs: ' · nový rekord!', en: ' · new record!' }) : ''}</div>
           <h1 style={{ fontSize: '4rem', margin: '4px 0' }}>{streak}</h1>
           <p className="quip">{quip}</p>
           <p className="muted">{t({ cs: `Rekord: ${Math.max(getNum('hiloBest'), streak)}`, en: `Best: ${Math.max(getNum('hiloBest'), streak)}` })}</p>
-          <button className="btn primary big" onClick={restart}>{t({ cs: '🔁 Znovu', en: '🔁 Again' })}</button>
+          <button className="btn primary big" onClick={restart}><span className="btn-icon"><IconRefresh /></span>{t({ cs: 'Znovu', en: 'Again' })}</button>
           <button className="btn big" onClick={() => share(t({ cs: `V „Co zabilo víc?“ mám sérii ${streak}. Překonáš to?`, en: `I got a streak of ${streak} in "What killed more?". Can you beat it?` }))}>
-            {t({ cs: '📤 Vyzvat kamaráda', en: '📤 Challenge a friend' })}
+            <span className="btn-icon"><IconShare /></span>{t({ cs: 'Vyzvat kamaráda', en: 'Challenge a friend' })}
           </button>
         </div>
       </>
@@ -91,14 +92,12 @@ export default function HiLoView({ meta, stats }: { meta: Meta; stats: Stats }) 
         </div>
         <div className="hilo">
           <div className="hilo-card known" key={a.id}>
-            <div className="emoji">{a.emoji}</div>
             <div className="label">{t(a.label)}</div>
             <div className="value">{n(a.value)}</div>
             <div className="unit">{since}</div>
           </div>
           <div className="hilo-vs">VS</div>
           <div className={`hilo-card mystery ${phase === 'reveal' ? (ok ? 'result-ok' : 'result-ko') : ''}`} key={b.id}>
-            <div className="emoji">{b.emoji}</div>
             <div className="label">{t(b.label)}</div>
             {phase === 'reveal' ? (
               <>
@@ -116,7 +115,7 @@ export default function HiLoView({ meta, stats }: { meta: Meta; stats: Stats }) 
             </div>
           ) : (
             <button className={`btn big ${ok ? 'primary' : 'danger'}`} onClick={next}>
-              {ok ? t({ cs: '✔ Správně – další →', en: '✔ Correct – next →' }) : t({ cs: '✘ Konec hry →', en: '✘ Game over →' })}
+              {ok ? t({ cs: 'Správně – další →', en: 'Correct – next →' }) : t({ cs: 'Konec hry →', en: 'Game over →' })}
             </button>
           )}
         </div>

@@ -3,7 +3,7 @@ import { loadDays, type DayRow, type Meta, type Stats } from '../data';
 import { useT } from '../i18n';
 import { buildCards, CATS, type CardCat } from '../cards';
 import { CardView } from '../components';
-import { IconShuffle } from '../icons';
+import { IconCalendar, IconCards, IconShuffle } from '../icons';
 import { useNav } from '../nav';
 
 export default function CardsView({ meta, stats }: { meta: Meta; stats: Stats }) {
@@ -78,16 +78,16 @@ export default function CardsView({ meta, stats }: { meta: Meta; stats: Stats })
         {cards.map((c, i) => (
           <section className="slide" key={c.id} data-i={i}>
             <CardView card={c} />
-            {i === 0 && <div className="swipe-hint">↓ {t({ cs: 'swipni pro další', en: 'swipe for more' })}</div>}
+            {i === 0 && <div className="swipe-hint">{t({ cs: 'Swipni pro další', en: 'Swipe for more' })}</div>}
           </section>
         ))}
         {cards.length > 0 && (
           <section className="slide feed-end">
-            <div className="big-emoji">🪦</div>
+            <div className="end-icon"><IconCards /></div>
             <h2>{t({ cs: 'Dorazil jsi na konec.', en: 'You made it to the end.' })}</h2>
             <p className="muted">{t({ cs: 'Na rozdíl od některých v těchhle číslech. Prověř se v kvízu.', en: 'Unlike some people in these numbers. Test yourself in the quiz.' })}</p>
-            <button className="btn primary big" onClick={() => go('games/daily')}>{t({ cs: '📅 Denní kvíz', en: '📅 Daily quiz' })}</button>
-            <button className="btn big" onClick={shuffle}>{t({ cs: '🔀 Znovu, zamíchané', en: '🔀 Again, shuffled' })}</button>
+            <button className="btn primary big" onClick={() => go('games/daily')}><span className="btn-icon"><IconCalendar /></span>{t({ cs: 'Denní kvíz', en: 'Daily quiz' })}</button>
+            <button className="btn big" onClick={shuffle}><span className="btn-icon"><IconShuffle /></span>{t({ cs: 'Znovu, zamíchané', en: 'Again, shuffled' })}</button>
             <p className="muted small">{t({ cs: 'Karty se přepočítávají z nových dat Policie ČR každý týden.', en: 'Cards are recalculated from new police data every week.' })}</p>
           </section>
         )}

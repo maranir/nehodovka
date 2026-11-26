@@ -10,13 +10,13 @@ export type CardVariant = 'black' | 'white' | 'red';
 
 export const CATS: { id: CardCat | 'all'; cs: string; en: string }[] = [
   { id: 'all', cs: 'Vše', en: 'All' },
-  { id: 'people', cs: '🧍 Lidi', en: '🧍 People' },
-  { id: 'speed', cs: '🏎️ Rychlost & chyby', en: '🏎️ Speed & errors' },
-  { id: 'alcohol', cs: '🍺 Alkohol & drogy', en: '🍺 Booze & drugs' },
-  { id: 'time', cs: '🕓 Kdy', en: '🕓 When' },
-  { id: 'animals', cs: '🦌 Zvířata', en: '🦌 Animals' },
-  { id: 'weird', cs: '🤯 Kuriozity', en: '🤯 Weird' },
-  { id: 'myth', cs: '🧠 Mýty', en: '🧠 Myths' },
+  { id: 'people', cs: 'Lidi', en: 'People' },
+  { id: 'speed', cs: 'Rychlost & chyby', en: 'Speed & errors' },
+  { id: 'alcohol', cs: 'Alkohol & drogy', en: 'Booze & drugs' },
+  { id: 'time', cs: 'Kdy', en: 'When' },
+  { id: 'animals', cs: 'Zvířata', en: 'Animals' },
+  { id: 'weird', cs: 'Kuriozity', en: 'Weird' },
+  { id: 'myth', cs: 'Mýty', en: 'Myths' },
 ];
 
 /** category + colour of every card id */
@@ -645,7 +645,7 @@ export function buildCards(S: Block, meta: Meta, days: Record<string, DayRow>, t
     add({
       id: 'pets',
       tag: L('Domácí mazlíčci', 'Pets & farm'),
-      big: `🐕 ${t.n(dogs)}`,
+      big: t.n(dogs),
       text: L(`srážek se psem ${since}. Kočky: ${t.n(cats)}. Koně: ${t.n(horses)}. Krávy: ${t.n(cows)}. Ovce: ${t.n(sheep)}. Slepice: ${t.n(hens)}.`, `collisions with dogs ${since}. Cats: ${t.n(cats)}. Horses: ${t.n(horses)}. Cows: ${t.n(cows)}. Sheep: ${t.n(sheep)}. Chickens: ${t.n(hens)}.`),
       punch: L('Kočky mají devět životů a lepší reflexy. Psi mají páníčky, co je pustí bez vodítka.', 'Cats have nine lives and better reflexes. Dogs have owners who let them off the lead.'),
       lesson: L('Pes u silnice patří na vodítko. A za tmy na něj reflexní obojek.', 'Dogs near roads belong on a lead – and in a reflective collar after dark.'),

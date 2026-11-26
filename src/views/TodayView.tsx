@@ -4,6 +4,7 @@ import { useT } from '../i18n';
 import { useNav } from '../nav';
 import { buildCards } from '../cards';
 import { AppBar, CardView, DateBadge } from '../components';
+import { IconAlert, IconCards, IconFlame, IconScale, IconTarget } from '../icons';
 import { daySeed, rng } from '../quiz';
 import { dailyDone, dailyStreak, getNum } from '../storage';
 
@@ -115,7 +116,7 @@ export default function TodayView({ meta, stats }: { meta: Meta; stats: Stats })
               <b>{done == null ? t({ cs: 'Denní kvíz čeká', en: 'Daily quiz is waiting' }) : t({ cs: `Dnešní kvíz: ${done}/10`, en: `Today's quiz: ${done}/10` })}</b>
               <span>{done == null ? t({ cs: '10 otázek, 2 minuty, 0 mrtvých', en: '10 questions, 2 minutes, 0 casualties' }) : t({ cs: 'Zítra nové otázky', en: 'New questions tomorrow' })}</span>
             </div>
-            {streak > 0 && <span className="streak">🔥 {streak}</span>}
+            {streak > 0 && <span className="streak"><span className="streak-icon"><IconFlame /></span>{streak}</span>}
           </button>
         </div>
 
@@ -162,28 +163,28 @@ export default function TodayView({ meta, stats }: { meta: Meta; stats: Stats })
         <div className="section-title"><h2>{t({ cs: 'Hraj si se smrtí', en: 'Play with death' })}</h2></div>
         <div className="tiles">
           <button className="tile red" onClick={() => go('games/profile')}>
-            <div className="emoji">🎯</div>
+            <div className="tile-icon"><IconTarget /></div>
             <div>
               <b>{t({ cs: 'Jak tě to zabije?', en: 'How will it get you?' })}</b>
               <span>{t({ cs: 'Tvůj osobní rizikový profil', en: 'Your personal risk profile' })}</span>
             </div>
           </button>
           <button className="tile yellow" onClick={() => go('games/hilo')}>
-            <div className="emoji">⚖️</div>
+            <div className="tile-icon"><IconScale /></div>
             <div>
               <b>{t({ cs: 'Co zabilo víc?', en: 'What killed more?' })}</b>
               <span>{hiloBest ? t({ cs: `Rekord: ${hiloBest} v řadě`, en: `Best: ${hiloBest} in a row` }) : t({ cs: 'Vyšší, nebo nižší', en: 'Higher or lower' })}</span>
             </div>
           </button>
           <button className="tile" onClick={() => go('map/spots')}>
-            <div className="emoji">☠️</div>
+            <div className="tile-icon"><IconAlert /></div>
             <div>
               <b>{t({ cs: 'Černá místa', en: 'Black spots' })}</b>
               <span>{spots?.[0] ? t({ cs: `Č. 1: ${spots[0].town}${spots[0].road ? ', ' + spots[0].road : ''}`, en: `#1: ${spots[0].town}${spots[0].road ? ', ' + spots[0].road : ''}` }) : '…'}</span>
             </div>
           </button>
           <button className="tile" onClick={() => go('cards')}>
-            <div className="emoji">🃏</div>
+            <div className="tile-icon"><IconCards /></div>
             <div>
               <b>{t({ cs: 'Černé karty', en: 'Black cards' })}</b>
               <span>{t({ cs: `${cards.length} karet`, en: `${cards.length} cards` })}</span>

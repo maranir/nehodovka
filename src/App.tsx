@@ -3,7 +3,7 @@ import { loadMeta, loadStats, type Meta, type Stats } from './data';
 import { useT } from './i18n';
 import { NavCtx, type Route } from './nav';
 import { dailyDone } from './storage';
-import { IconCards, IconGames, IconInfo, IconMap, IconToday } from './icons';
+import { IconAlert, IconCards, IconGames, IconInfo, IconMap, IconToday } from './icons';
 import TodayView from './views/TodayView';
 import CardsView from './views/CardsView';
 import GamesView from './views/GamesView';
@@ -62,7 +62,7 @@ export default function App() {
       case 'map':
       case 'map/spots':
         view = (
-          <Suspense fallback={<div className="page loading">🗺️</div>}>
+          <Suspense fallback={<div className="page loading"><span className="loading-icon"><IconMap /></span></div>}>
             <MapView meta={meta} stats={stats} openSpots={route === 'map/spots'} />
           </Suspense>
         );
@@ -86,7 +86,7 @@ export default function App() {
               <p className="muted">{error}</p>
             </div>
           )}
-          {!error && !ready && <div className="page loading">🚧 {t({ cs: 'Načítám…', en: 'Loading…' })}</div>}
+          {!error && !ready && <div className="page loading"><span className="loading-icon"><IconAlert /></span>{t({ cs: 'Načítám…', en: 'Loading…' })}</div>}
           {view}
         </main>
         <nav className="tabbar">

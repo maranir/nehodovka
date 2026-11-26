@@ -4,6 +4,7 @@ import { useT } from '../i18n';
 import { buildQuestions, daySeed, rankFor, rng } from '../quiz';
 import { share } from '../share';
 import { AppBar } from '../components';
+import { IconCheck, IconFlame, IconScale, IconShare, IconShuffle } from '../icons';
 import { useNav } from '../nav';
 import { dailyDone, markDaily, setBest } from '../storage';
 
@@ -41,11 +42,11 @@ export default function QuizView({ meta, stats, mode }: { meta: Meta; stats: Sta
       <>
         <AppBar back="games" title={title} />
         <div className="page center">
-          <div className="big-emoji">✅</div>
+          <div className="end-icon ok"><IconCheck /></div>
           <h1>{t({ cs: `Dnes máš ${already}/10`, en: `You scored ${already}/10 today` })}</h1>
           <p className="muted">{t({ cs: 'Nové otázky budou zítra. Do té doby jezdi opatrně, ať je máš kde hrát.', en: 'New questions tomorrow. Until then, drive carefully so you are around to play.' })}</p>
-          <button className="btn primary big" onClick={() => go('games/quiz')}>{t({ cs: '🎲 Náhodný kvíz', en: '🎲 Random quiz' })}</button>
-          <button className="btn big" onClick={() => go('games/hilo')}>{t({ cs: '⚖️ Co zabilo víc?', en: '⚖️ What killed more?' })}</button>
+          <button className="btn primary big" onClick={() => go('games/quiz')}><span className="btn-icon"><IconShuffle /></span>{t({ cs: 'Náhodný kvíz', en: 'Random quiz' })}</button>
+          <button className="btn big" onClick={() => go('games/hilo')}><span className="btn-icon"><IconScale /></span>{t({ cs: 'Co zabilo víc?', en: 'What killed more?' })}</button>
         </div>
       </>
     );
@@ -65,7 +66,7 @@ export default function QuizView({ meta, stats, mode }: { meta: Meta; stats: Sta
           <div className="big-emoji">{rank.emoji}</div>
           <div className="eyebrow">{score}/{questions.length}{res.record ? t({ cs: ' · nový rekord!', en: ' · new record!' }) : ''}</div>
           <h1>{t(rank)}</h1>
-          {res.streak > 0 && <p><span className="streak" style={{ fontSize: '1rem' }}>🔥 {t({ cs: `${res.streak} ${res.streak === 1 ? 'den' : res.streak < 5 ? 'dny' : 'dní'} v řadě`, en: `${res.streak}-day streak` })}</span></p>}
+          {res.streak > 0 && <p><span className="streak" style={{ fontSize: '1rem' }}><span className="streak-icon"><IconFlame /></span>{t({ cs: `${res.streak} ${res.streak === 1 ? 'den' : res.streak < 5 ? 'dny' : 'dní'} v řadě`, en: `${res.streak}-day streak` })}</span></p>}
           <p className="muted">
             {score === questions.length
               ? t({ cs: 'Smrtka si tě zapsala do sešitu „složité případy“.', en: 'Death has filed you under "difficult cases".' })
@@ -73,9 +74,9 @@ export default function QuizView({ meta, stats, mode }: { meta: Meta; stats: Sta
                 ? t({ cs: 'Dobrá zpráva: teď víš víc než před dvěma minutami. Špatná: ostatní řidiči ne.', en: "Good news: you know more than two minutes ago. Bad news: the other drivers don't." })
                 : t({ cs: 'Slušné. Teď to ještě aplikovat za volantem.', en: 'Decent. Now apply it behind the wheel.' })}
           </p>
-          <button className="btn primary big" onClick={() => share(text)}>{t({ cs: '📤 Sdílet výsledek', en: '📤 Share result' })}</button>
-          <button className="btn big" onClick={() => (mode === 'daily' ? go('games/quiz') : restart())}>{t({ cs: '🎲 Náhodný kvíz', en: '🎲 Random quiz' })}</button>
-          <button className="btn big" onClick={() => go('games/hilo')}>{t({ cs: '⚖️ Co zabilo víc?', en: '⚖️ What killed more?' })}</button>
+          <button className="btn primary big" onClick={() => share(text)}><span className="btn-icon"><IconShare /></span>{t({ cs: 'Sdílet výsledek', en: 'Share result' })}</button>
+          <button className="btn big" onClick={() => (mode === 'daily' ? go('games/quiz') : restart())}><span className="btn-icon"><IconShuffle /></span>{t({ cs: 'Náhodný kvíz', en: 'Random quiz' })}</button>
+          <button className="btn big" onClick={() => go('games/hilo')}><span className="btn-icon"><IconScale /></span>{t({ cs: 'Co zabilo víc?', en: 'What killed more?' })}</button>
         </div>
       </>
     );
@@ -107,7 +108,7 @@ export default function QuizView({ meta, stats, mode }: { meta: Meta; stats: Sta
         </div>
         {answered && (
           <div className="explain">
-            <div className={`verdict ${picked === q.correct ? 'ok' : 'ko'}`}>{picked === q.correct ? t({ cs: '✔ Správně', en: '✔ Correct' }) : t({ cs: '✘ Vedle', en: '✘ Wrong' })}</div>
+            <div className={`verdict ${picked === q.correct ? 'ok' : 'ko'}`}>{picked === q.correct ? t({ cs: 'Správně', en: 'Correct' }) : t({ cs: 'Vedle', en: 'Wrong' })}</div>
             <p>{q.explain}</p>
             <p className="quip">{q.quip}</p>
             <button className="btn primary big" onClick={() => { setI(i + 1); setPicked(null); }}>

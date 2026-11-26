@@ -20,8 +20,8 @@ export default function AboutView({ meta }: { meta: Meta }) {
       </p>
 
       <div className="lang-switch">
-        <button className={`chip ${lang === 'cs' ? 'on' : ''}`} onClick={() => setLang('cs')}>🇨🇿 Čeština</button>
-        <button className={`chip ${lang === 'en' ? 'on' : ''}`} onClick={() => setLang('en')}>🇬🇧 English</button>
+        <button className={`chip ${lang === 'cs' ? 'on' : ''}`} onClick={() => setLang('cs')}>Čeština</button>
+        <button className={`chip ${lang === 'en' ? 'on' : ''}`} onClick={() => setLang('en')}>English</button>
       </div>
 
       <h2>{t({ cs: 'Data', en: 'Data' })}</h2>
@@ -36,7 +36,7 @@ export default function AboutView({ meta }: { meta: Meta }) {
                 {!y.complete && ` · ${t({ cs: 'do', en: 'until' })} ${date(y.lastDate)}`}
               </span>
             </div>
-            <b className="c-red">💀 {n(y.killed)}</b>
+            <b className="c-red">{n(y.killed)} {t({ cs: 'mrtvých', en: 'dead' })}</b>
           </div>
         ))}
       </div>

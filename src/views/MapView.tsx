@@ -7,6 +7,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { loadSpots, type BlackSpot, type Meta, type Stats } from '../data';
 import { dayToDate } from '../data';
 import { useT } from '../i18n';
+import { IconAlert, IconCrosshair, IconLocate } from '../icons';
 import { TYPE, causeLabel } from '../labels';
 import { areaStats, distance, loadAllPoints, toGeoJSON, type AreaStats, type Merged } from '../points';
 import { causeTip } from '../tips';
@@ -268,12 +269,12 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
   const expected = (nat.injuryAcc / CZ_AREA_KM2) * Math.PI; // injury accidents per 1 km radius circle, national average
   const filters: [Filter, string][] = [
     ['all', t({ cs: 'Vše', en: 'All' })],
-    ['fatal', t({ cs: '💀 Smrtelné', en: '💀 Fatal' })],
-    ['alcohol', t({ cs: '🍺 Alkohol/drogy', en: '🍺 Alcohol/drugs' })],
-    ['peds', t({ cs: '🚶 Chodci', en: '🚶 Pedestrians' })],
-    ['bikes', t({ cs: '🚲 Cyklisti', en: '🚲 Cyclists' })],
-    ['moto', t({ cs: '🏍️ Motorky', en: '🏍️ Motorbikes' })],
-    ['animals', t({ cs: '🦌 Zvěř', en: '🦌 Animals' })],
+    ['fatal', t({ cs: 'Smrtelné', en: 'Fatal' })],
+    ['alcohol', t({ cs: 'Alkohol/drogy', en: 'Alcohol/drugs' })],
+    ['peds', t({ cs: 'Chodci', en: 'Pedestrians' })],
+    ['bikes', t({ cs: 'Cyklisti', en: 'Cyclists' })],
+    ['moto', t({ cs: 'Motorky', en: 'Motorbikes' })],
+    ['animals', t({ cs: 'Zvěř', en: 'Animals' })],
   ];
 
   return (
@@ -298,13 +299,13 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
       {!pts && !error && <div className="map-loading">{t({ cs: 'Načítám nehody…', en: 'Loading crashes…' })}</div>}
       <div className="map-actions">
         <button className="fab skull" onClick={() => { setSpotList(true); setArea(null); setSelected(null); setSpot(null); }} disabled={!spots}>
-          ☠️ {t({ cs: 'Černá místa', en: 'Black spots' })}
+          <span className="fab-icon"><IconAlert /></span>{t({ cs: 'Černá místa', en: 'Black spots' })}
         </button>
         <button className="fab" onClick={analyzeCenter} disabled={!pts}>
-          ⌖ {t({ cs: 'Střed mapy', en: 'Map centre' })}
+          <span className="fab-icon"><IconCrosshair /></span>{t({ cs: 'Střed mapy', en: 'Map centre' })}
         </button>
         <button className="fab primary" onClick={locate} disabled={!pts || locating}>
-          📍 {locating ? '…' : t({ cs: 'Moje okolí', en: 'My area' })}
+          <span className="fab-icon"><IconLocate /></span>{locating ? '…' : t({ cs: 'Moje okolí', en: 'My area' })}
         </button>
       </div>
       <div className="legend">
@@ -327,11 +328,11 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
           <h3>{t(TYPE[String(pts.type[selected])] ?? TYPE['0'])}</h3>
           <p className="muted">{t({ cs: 'Hlavní příčina', en: 'Main cause' })}: {t(causeLabel(pts.cause[selected]))}</p>
           <div className="toll">
-            {pts.k[selected] > 0 && <span className="k">💀 {pts.k[selected]} {t({ cs: 'mrtví', en: 'dead' })}</span>}
-            {pts.s[selected] > 0 && <span className="s">🚑 {pts.s[selected]} {t({ cs: 'těžce zraněno', en: 'seriously injured' })}</span>}
-            {pts.l[selected] > 0 && <span className="l">🩹 {pts.l[selected]} {t({ cs: 'lehce zraněno', en: 'slightly injured' })}</span>}
+            {pts.k[selected] > 0 && <span className="k">{pts.k[selected]} {t({ cs: 'mrtví', en: 'dead' })}</span>}
+            {pts.s[selected] > 0 && <span className="s">{pts.s[selected]} {t({ cs: 'těžce zraněno', en: 'seriously injured' })}</span>}
+            {pts.l[selected] > 0 && <span className="l">{pts.l[selected]} {t({ cs: 'lehce zraněno', en: 'slightly injured' })}</span>}
           </div>
-          <p className="tip">💡 {t(causeTip(pts.cause[selected], pts.flags[selected]))}</p>
+          <p className="tip">{t(causeTip(pts.cause[selected], pts.flags[selected]))}</p>
         </div>
       )}
 
@@ -350,9 +351,9 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
                 {n(area.n)} {t({ cs: 'nehod se zraněním', en: 'injury crashes' })}
               </h3>
               <div className="toll">
-                <span className="k">💀 {n(area.k)}</span>
-                <span className="s">🚑 {n(area.s)}</span>
-                <span className="l">🩹 {n(area.l)}</span>
+                <span className="k">{n(area.k)} {t({ cs: 'mrtví', en: 'dead' })}</span>
+                <span className="s">{n(area.s)} {t({ cs: 'těžce', en: 'serious' })}</span>
+                <span className="l">{n(area.l)} {t({ cs: 'lehce', en: 'minor' })}</span>
               </div>
               <ul className="facts">
                 <li>
@@ -370,16 +371,16 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
                     {t({ cs: 'Nejhorší hodina', en: 'Worst hour' })}: <b>{area.worstHour}:00–{area.worstHour + 1}:00</b>
                   </li>
                 )}
-                {area.peds > 0 && <li>🚶 {t({ cs: 'Sražení chodci', en: 'Pedestrians hit' })}: {n(area.peds)}</li>}
-                {area.bikes > 0 && <li>🚲 {t({ cs: 'Nehody cyklistů', en: 'Cyclist crashes' })}: {n(area.bikes)}</li>}
-                {area.alcohol > 0 && <li>🍺 {t({ cs: 'Alkohol nebo drogy', en: 'Alcohol or drugs' })}: {n(area.alcohol)}×</li>}
+                {area.peds > 0 && <li>{t({ cs: 'Sražení chodci', en: 'Pedestrians hit' })}: {n(area.peds)}</li>}
+                {area.bikes > 0 && <li>{t({ cs: 'Nehody cyklistů', en: 'Cyclist crashes' })}: {n(area.bikes)}</li>}
+                {area.alcohol > 0 && <li>{t({ cs: 'Alkohol nebo drogy', en: 'Alcohol or drugs' })}: {n(area.alcohol)}×</li>}
                 {area.nearestFatal != null && (
                   <li>
                     {t({ cs: 'Nejbližší smrtelná nehoda', en: 'Nearest fatal crash' })}: <b>{area.nearestFatal < 1000 ? `${n(area.nearestFatal)} m` : `${p(area.nearestFatal / 1000)} km`}</b>
                   </li>
                 )}
               </ul>
-              {area.topCause && <p className="tip">💡 {t(causeTip(area.topCause, 0))}</p>}
+              {area.topCause && <p className="tip">{t(causeTip(area.topCause, 0))}</p>}
               <p className="muted small">{t({ cs: 'Jen nehody se zraněním; pouze s hmotnou škodou nejsou v mapě.', en: 'Injury crashes only; damage-only crashes are not on the map.' })}</p>
             </>
           )}
@@ -389,7 +390,7 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
         <div className="sheet">
           <button className="close" onClick={() => setSpotList(false)} aria-label="close">×</button>
           <div className="sheet-tag">{t({ cs: `${spots.length} nejhorších míst Česka · ${meta.years[0].year}–${meta.years.at(-1)!.year}`, en: `${spots.length} worst places in Czechia · ${meta.years[0].year}–${meta.years.at(-1)!.year}` })}</div>
-          <h3>☠️ {t({ cs: 'Černá místa', en: 'Black spots' })}</h3>
+          <h3>{t({ cs: 'Černá místa', en: 'Black spots' })}</h3>
           <p className="muted small" style={{ marginTop: 0 }}>
             {t({
               cs: 'Místa, kde se opakovaně bourá (min. 10 nehod se zraněním v okruhu 300 m), seřazená podle závažnosti.',
@@ -405,7 +406,7 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
                   <span>
                     <span className="name">{x.town || '?'}{x.road ? ` · ${x.road}` : ''}</span>
                     <span className="sub" style={{ display: 'block' }}>
-                      {n(x.n)} {t({ cs: 'nehod', en: 'crashes' })} · 💀 {x.k} · 🚑 {x.s}{x.cause ? ` · ${t(causeLabel(x.cause))}` : ''}
+                      {n(x.n)} {t({ cs: 'nehod', en: 'crashes' })} · {x.k} {t({ cs: 'mrtvých', en: 'dead' })} · {x.s} {t({ cs: 'těžce', en: 'serious' })}{x.cause ? ` · ${t(causeLabel(x.cause))}` : ''}
                     </span>
                   </span>
                   <span className="dist">{me ? fmtKm(distance(me[0], me[1], x.lon, x.lat)) : ''}</span>
@@ -414,7 +415,7 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
             ))}
           </ul>
           {!me && (
-            <button className="btn primary" onClick={locate}>📍 {t({ cs: 'Seřadit podle mé polohy', en: 'Sort by my location' })}</button>
+            <button className="btn primary" onClick={locate}><span className="btn-icon"><IconLocate /></span>{t({ cs: 'Seřadit podle mé polohy', en: 'Sort by my location' })}</button>
           )}
         </div>
       )}
@@ -426,17 +427,17 @@ export default function MapView({ meta, stats, openSpots = false }: { meta: Meta
           <h3>{spot.town}{spot.road ? ` · ${spot.road}` : ''}</h3>
           <div className="toll">
             <span>{n(spot.n)} {t({ cs: 'nehod se zraněním', en: 'injury crashes' })}</span>
-            <span className="k">💀 {spot.k}</span>
-            <span className="s">🚑 {spot.s}</span>
-            <span className="l">🩹 {spot.l}</span>
+            <span className="k">{spot.k} {t({ cs: 'mrtví', en: 'dead' })}</span>
+            <span className="s">{spot.s} {t({ cs: 'těžce', en: 'serious' })}</span>
+            <span className="l">{spot.l} {t({ cs: 'lehce', en: 'minor' })}</span>
           </div>
           <ul className="facts">
             {spot.cause && <li>{t({ cs: 'Typická příčina', en: 'Typical cause' })}: <b>{t(causeLabel(spot.cause))}</b> ({spot.causeN}×)</li>}
-            {spot.peds > 0 && <li>🚶 {t({ cs: 'Sražení chodci', en: 'Pedestrians hit' })}: {spot.peds}</li>}
-            {spot.bikes > 0 && <li>🚲 {t({ cs: 'Cyklisté', en: 'Cyclists' })}: {spot.bikes}</li>}
-            {spot.alcohol > 0 && <li>🍺 {t({ cs: 'Alkohol', en: 'Alcohol' })}: {spot.alcohol}×</li>}
+            {spot.peds > 0 && <li>{t({ cs: 'Sražení chodci', en: 'Pedestrians hit' })}: {spot.peds}</li>}
+            {spot.bikes > 0 && <li>{t({ cs: 'Cyklisté', en: 'Cyclists' })}: {spot.bikes}</li>}
+            {spot.alcohol > 0 && <li>{t({ cs: 'Alkohol', en: 'Alcohol' })}: {spot.alcohol}×</li>}
           </ul>
-          {spot.cause && <p className="tip">💡 {t(causeTip(Number(spot.cause), 0))}</p>}
+          {spot.cause && <p className="tip">{t(causeTip(Number(spot.cause), 0))}</p>}
           <button className="btn" onClick={() => { setSpot(null); setSpotList(true); }}>← {t({ cs: 'Zpět na seznam', en: 'Back to the list' })}</button>
         </div>
       )}
