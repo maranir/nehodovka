@@ -81,6 +81,21 @@ export const IconWalk = () => (
 export const IconUser = () => (
   <svg viewBox="0 0 24 24" {...P}><circle cx="12" cy="8" r="4" /><path d="M4 20a8 8 0 0 1 16 0" /></svg>
 );
+export const IconAward = () => (
+  <svg viewBox="0 0 24 24" {...P}><circle cx="12" cy="9" r="6" /><path d="M8.5 14.5 7 22l5-2.5L17 22l-1.5-7.5" /></svg>
+);
+export const IconSchool = () => (
+  <svg viewBox="0 0 24 24" {...P}><path d="M2 10l10-5 10 5-10 5-10-5Z" /><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 10v6" /></svg>
+);
+export const IconCoin = () => (
+  <svg viewBox="0 0 24 24" {...P}><circle cx="12" cy="12" r="9" /><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4" /></svg>
+);
+export const IconSpark = () => (
+  <svg viewBox="0 0 24 24" {...P}><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2Z" /></svg>
+);
+export const IconShield = () => (
+  <svg viewBox="0 0 24 24" {...P}><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3Z" /></svg>
+);
 export const Sign = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 512 512" aria-hidden="true">
     <path d="M256 40 L482 432 H30 Z" fill="#ffd400" stroke="#0b0b0b" strokeWidth="14" strokeLinejoin="round" />

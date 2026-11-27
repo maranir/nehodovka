@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { Meta, Stats } from '../data';
 import { sum } from '../data';
 import { useT, type L } from '../i18n';
 import { AppBar } from '../components';
 import { IconBike, IconCalendar, IconCar, IconLocate, IconMoon, IconRefresh, IconShare, IconSun, IconSunrise, IconSunset, IconUser, IconWalk } from '../icons';
 import { share } from '../share';
+import { recordProfileComplete } from '../storage';
 import { AGE_BUCKETS } from '../labels';
 
 type Mode = 'car' | 'passenger' | 'moto' | 'bike' | 'walk';
@@ -74,6 +75,10 @@ export default function ProfileView({ meta, stats }: { meta: Meta; stats: Stats 
   const since = t({ cs: `od roku ${meta.years[0].year}`, en: `since ${meta.years[0].year}` });
 
   const restart = () => { setStep(0); setMode(null); setAge(null); setRegion(null); setSlot(null); };
+
+  useEffect(() => {
+    if (step >= 4) recordProfileComplete();
+  }, [step]);
 
   if (step < 4) {
     const questions: { q: L; one?: boolean; options: { key: string; icon?: () => ReactNode; label: string; pick: () => void }[] }[] = [

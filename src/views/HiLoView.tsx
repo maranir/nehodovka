@@ -6,7 +6,7 @@ import { AppBar } from '../components';
 import { IconAlert, IconRefresh, IconShare, IconTrophy } from '../icons';
 import CountUp from '../CountUp';
 import { share } from '../share';
-import { getNum, setBest } from '../storage';
+import { getNum, recordHiLo } from '../storage';
 
 type Phase = 'ask' | 'reveal' | 'over';
 
@@ -33,7 +33,7 @@ export default function HiLoView({ meta, stats }: { meta: Meta; stats: Stats }) 
     setPhase('reveal');
     navigator.vibrate?.(right ? 20 : [50, 40, 50]);
     if (right) setStreak((s) => s + 1);
-    else setRecord(setBest('hiloBest', streak));
+    else setRecord(recordHiLo(streak) > 0 || streak > 0);
   };
   const next = () => {
     if (!ok) {

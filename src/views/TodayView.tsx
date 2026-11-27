@@ -3,8 +3,8 @@ import { latestFullYear, loadDays, loadSpots, type BlackSpot, type DayRow, type 
 import { useT } from '../i18n';
 import { useNav } from '../nav';
 import { buildCards } from '../cards';
-import { AppBar, CardView, DateBadge } from '../components';
-import { IconAlert, IconCards, IconFlame, IconScale, IconTarget } from '../icons';
+import { AppBar, CardView, ComebackBanner, DateBadge, SponsorSlot } from '../components';
+import { IconAlert, IconCards, IconFlame, IconScale, IconSchool, IconTarget } from '../icons';
 import { daySeed, rng } from '../quiz';
 import { dailyDone, dailyStreak, getNum } from '../storage';
 
@@ -109,6 +109,7 @@ export default function TodayView({ meta, stats }: { meta: Meta; stats: Stats })
           </p>
         </section>
 
+        <ComebackBanner />
         <div className="tiles">
           <button className={`tile wide ${done == null ? 'yellow' : ''}`} onClick={() => go('games/daily')}>
             <DateBadge />
@@ -190,7 +191,16 @@ export default function TodayView({ meta, stats }: { meta: Meta; stats: Stats })
               <span>{t({ cs: `${cards.length} karet`, en: `${cards.length} cards` })}</span>
             </div>
           </button>
+          <button className="tile wide" onClick={() => go('edu')}>
+            <div className="tile-icon"><IconSchool /></div>
+            <div style={{ flex: 1 }}>
+              <b>{t({ cs: 'Pro školy, autoškoly a Policii ČR', en: 'For schools, driving schools & Police' })}</b>
+              <span>{t({ cs: 'Výukový režim bez černého humoru a 45min metodika', en: 'Classroom mode without dark humour & 45-min lesson plan' })}</span>
+            </div>
+          </button>
         </div>
+
+        <SponsorSlot compact />
 
         {cardOfDay && (
           <>

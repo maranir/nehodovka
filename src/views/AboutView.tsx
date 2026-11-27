@@ -1,10 +1,14 @@
 import type { Meta } from '../data';
 import { useLang, useT } from '../i18n';
-import { AppBar } from '../components';
+import { useNav } from '../nav';
+import { AppBar, SponsorSlot } from '../components';
+import { IconSchool } from '../icons';
+import { SPONSOR_TIERS } from '../sponsors';
 
 export default function AboutView({ meta }: { meta: Meta }) {
   const { t, n, date } = useT();
   const { lang, setLang } = useLang();
+  const go = useNav();
   const maxAcc = Math.max(...meta.years.map((y) => y.accidents));
   return (
     <>
@@ -22,6 +26,27 @@ export default function AboutView({ meta }: { meta: Meta }) {
       <div className="lang-switch">
         <button className={`chip ${lang === 'cs' ? 'on' : ''}`} onClick={() => setLang('cs')}>Čeština</button>
         <button className={`chip ${lang === 'en' ? 'on' : ''}`} onClick={() => setLang('en')}>English</button>
+      </div>
+
+      <div className="tiles" style={{ marginTop: 12 }}>
+        <button className="tile wide yellow" onClick={() => go('edu')}>
+          <div className="tile-icon"><IconSchool /></div>
+          <div style={{ flex: 1 }}>
+            <b>{t({ cs: 'Pro školy, autoškoly a Policii ČR', en: 'For schools, driving schools & Police' })}</b>
+            <span>{t({ cs: 'Výukový režim bez černého humoru, 45min metodika a tisknutelná fakta', en: 'Classroom mode without dark humour, 45-min lesson plan & printable facts' })}</span>
+          </div>
+        </button>
+      </div>
+
+      <h2>{t({ cs: 'Partnerství & sponzoring', en: 'Partnerships & sponsorship' })}</h2>
+      <SponsorSlot />
+      <div className="panel" style={{ marginTop: 10 }}>
+        {SPONSOR_TIERS.map((tier) => (
+          <div className="tier-row" key={tier.id}>
+            <b>{t(tier.title)}</b>
+            <div className="muted small">{t(tier.desc)}</div>
+          </div>
+        ))}
       </div>
 
       <h2>{t({ cs: 'Data', en: 'Data' })}</h2>

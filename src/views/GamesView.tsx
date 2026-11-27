@@ -1,21 +1,33 @@
 import type { Meta, Stats } from '../data';
 import { useT } from '../i18n';
 import { useNav } from '../nav';
-import { AppBar, DateBadge } from '../components';
-import { IconFlame, IconScale, IconShuffle, IconTarget } from '../icons';
-import { dailyDone, dailyStreak, getNum } from '../storage';
+import { AppBar, BadgeIcon, ComebackBanner, DateBadge, usePrefsTick } from '../components';
+import { IconCoin, IconFlame, IconScale, IconShuffle, IconTarget } from '../icons';
+import { BADGES } from '../rewards';
+import { dailyDone, dailyStreak, getBadges, getNum, getTokens } from '../storage';
 
 export default function GamesView(_: { meta: Meta; stats: Stats }) {
   const { t } = useT();
   const go = useNav();
+  usePrefsTick();
   const done = dailyDone();
   const streak = dailyStreak();
+  const tokens = getTokens();
+  const unlocked = new Set(getBadges());
   return (
     <>
       <AppBar />
       <div className="page">
-        <div className="eyebrow">{t({ cs: 'Hry', en: 'Games' })}</div>
-        <h1>{t({ cs: 'Uč se. Hraj. Přežij.', en: 'Learn. Play. Survive.' })}</h1>
+        <div className="games-head">
+          <div>
+            <div className="eyebrow">{t({ cs: 'Hry', en: 'Games' })}</div>
+            <h1>{t({ cs: 'Uč se. Hraj. Přežij.', en: 'Learn. Play. Survive.' })}</h1>
+          </div>
+          <div className="token-pill" title={t({ cs: 'Bezpečnostní žetony', en: 'Safety tokens' })}>
+            <IconCoin /> <b>{tokens}</b>
+          </div>
+        </div>
+        <ComebackBanner />
         <div className="tiles">
           <button className={`tile wide ${done == null ? 'yellow' : ''}`} onClick={() => go('games/daily')}>
             <DateBadge />
@@ -47,8 +59,26 @@ export default function GamesView(_: { meta: Meta; stats: Stats }) {
             </div>
           </button>
         </div>
-        <p className="muted small" style={{ marginTop: 22 }}>
-          {t({ cs: 'Všechny odpovědi jsou spočítané ze skutečných nehod. Žádná čísla si nevymýšlíme – to nechceme ani my.', en: 'Every answer is computed from real crashes. We make up no numbers – we wouldn\'t want to.' })}
+        <div className="section-title">
+          <h2>{t({ cs: 'Odznaky & žetony', en: 'Badges & tokens' })}</h2>
+          <span className="muted small">{unlocked.size}/{BADGES.length}</span>
+        </div>
+        <div className="badge-grid">
+          {BADGES.map((b) => {
+            const on = unlocked.has(b.id);
+            return (
+              <div className={`badge-card ${on ? 'on' : 'locked'}`} key={b.id}>
+                <span className="badge-icon"><BadgeIcon name={b.icon} /></span>
+                <div>
+                  <b>{t(b.name)}</b>
+                  <div className="muted small">{t(b.desc)}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="muted small" style={{ marginTop: 18 }}>
+          {t({ cs: 'Žetony získáváš za denní kvíz (+1, za 8+/10 +2), první profil a rekordy. Za 2 žetony můžeš obnovit přerušenou sérii.', en: 'Earn tokens from daily quizzes (+1, or +2 for 8+/10), your first profile, and records. Spend 2 tokens to restore a paused streak.' })}
         </p>
       </div>
     </>

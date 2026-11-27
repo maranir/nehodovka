@@ -11,10 +11,11 @@ import QuizView from './views/QuizView';
 import HiLoView from './views/HiLoView';
 import ProfileView from './views/ProfileView';
 import AboutView from './views/AboutView';
+import EduView from './views/EduView';
 
 const MapView = lazy(() => import('./views/MapView'));
 
-const ROUTES: Route[] = ['today', 'cards', 'map', 'map/spots', 'games', 'games/quiz', 'games/daily', 'games/hilo', 'games/profile', 'info'];
+const ROUTES: Route[] = ['today', 'cards', 'map', 'map/spots', 'games', 'games/quiz', 'games/daily', 'games/hilo', 'games/profile', 'info', 'edu'];
 const fromHash = (): Route => {
   const h = location.hash.slice(1) as Route;
   return ROUTES.includes(h) ? h : 'today';
@@ -73,6 +74,7 @@ export default function App() {
       case 'games/hilo': view = <HiLoView meta={meta} stats={stats} />; break;
       case 'games/profile': view = <ProfileView meta={meta} stats={stats} />; break;
       case 'info': view = <AboutView meta={meta} />; break;
+      case 'edu': view = <EduView meta={meta} stats={stats} />; break;
     }
   }
 
